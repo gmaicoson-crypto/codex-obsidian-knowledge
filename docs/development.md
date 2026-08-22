@@ -8,7 +8,7 @@ Skill 的任务边界写在 `skills/code-knowledge-capture/SKILL.md`；长格式
 
 ## Change the note schema
 
-先更新 `skills/code-knowledge-capture/references/summary-schema.md`，再同步更新 `templates/`、`README.md` 和 `docs/architecture.md` 中的结构示例。新字段应说明用途、是否必填以及兼容旧笔记的行为。`NoteRoot` 必须保持为 Vault 内的相对路径。
+先更新 `skills/code-knowledge-capture/references/summary-schema.md`，再同步更新 `templates/`、`README.md` 和 `docs/architecture.md` 中的结构示例。新字段应说明用途、是否必填以及兼容旧笔记的行为。`NoteRoot`、project ID 和 feature ID 必须遵守 `path-policy.md`；写入前必须遵守 `redaction-policy.md`。
 
 ## Change the capture behavior
 
@@ -29,8 +29,8 @@ $codexRoot = if ($env:CODEX_HOME) { $env:CODEX_HOME } else { Join-Path $env:USER
 $python = (Get-Command python -ErrorAction Stop).Source
 $skillValidator = Join-Path $codexRoot 'skills\.system\skill-creator\scripts\quick_validate.py'
 $pluginValidator = Join-Path $codexRoot 'skills\.system\plugin-creator\scripts\validate_plugin.py'
-& $python $skillValidator '.\skills\code-knowledge-capture'
-& $python $pluginValidator '.'
+& $python -X utf8 $skillValidator '.\skills\code-knowledge-capture'
+& $python -X utf8 $pluginValidator '.'
 ```
 
 运行仓库校验和隔离的临时 Vault 回归测试（测试数据仅创建在 `tests/.tmp-*` 并在结束时清理）：
@@ -41,4 +41,12 @@ $pluginValidator = Join-Path $codexRoot 'skills\.system\plugin-creator\scripts\v
 
 macOS 初始化脚本应在 macOS 测试机上执行语法检查和临时 Vault 集成测试。测试覆盖固定的 Local REST API 版本下载、首次生成 API key、已有 `data.json` 的幂等更新、`community-plugins.json` / `app.json` 配置、Codex MCP 配置以及 HTTPS/HTTP endpoint 检查。不要把真实 Vault API key 用作测试 fixture。
 
-集成测试应使用临时测试 Vault，验证插件配置解析、配置幂等性、HTTP/HTTPS endpoint 检查和失败时不泄露 key。不要把真实 Vault API key 用作测试 fixture。
+集成测试应使用临时测试 Vault，验证插件配置解析、配置幂等性、HTTP/HTTPS endpoint 检查、失败回滚、资产哈希校验和失败时不泄露 key。不要把真实 Vault API key 用作测试 fixture。
+
+macOS 或 CI 环境还应运行：
+
+```bash
+bash -n scripts/*.sh tests/repository-validation.sh
+bash tests/repository-validation.sh
+shellcheck -S error scripts/*.sh tests/repository-validation.sh
+```

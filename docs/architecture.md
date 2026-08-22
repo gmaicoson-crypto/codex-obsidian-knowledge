@@ -20,7 +20,7 @@ Codex MCP client ── Bearer token ──> Obsidian Local REST API MCP endpoin
 
 首次打开仓库时，根目录 `AGENTS.md` 负责发现连接状态。用户确认后，`bootstrap.ps1` 或 `bootstrap.sh` 下载并启用 Local REST API 插件、生成本地 API key，并配置 Codex MCP。之后 Skill 才使用本机 endpoint。
 
-本仓库把 Skill、笔记模式、连接安装和诊断脚本放在一个发布单元里；它不实现或托管一个新的远程 MCP 服务。MCP 服务由 Obsidian 的 Local REST API 社区插件提供，Codex 通过本机 endpoint 调用它。
+本仓库把 Skill、笔记模式、连接安装和诊断脚本放在一个发布单元里；它不实现或托管一个新的远程 MCP 服务。MCP 服务由 Obsidian 的 Local REST API 社区插件提供，Codex 通过本机 endpoint 调用它。安装脚本先预检配置，再在临时目录完成下载、哈希和 manifest 校验，最后以可回滚提交更新 Vault 与 Codex 配置。
 
 ## Capture path
 
@@ -49,7 +49,7 @@ startup_timeout_sec = 20
 tool_timeout_sec = 60
 ```
 
-当自签名 HTTPS 证书无法被客户端信任时，`-AllowInsecureHttp` 或 `--allow-insecure-http` 会启用插件的回环 HTTP server，并将 endpoint 切换到 `http://127.0.0.1:27123/mcp/`。诊断脚本读取 Codex 的实际配置和凭据来源，核对插件 API key，并执行经过认证的 MCP `initialize` 请求；HTTPS 证书不受信任时诊断会失败并提示信任证书或改用 HTTP fallback。
+当自签名 HTTPS 证书无法被客户端信任时，`-AllowInsecureHttp` 或 `--allow-insecure-http` 会启用插件的回环 HTTP server，并将 endpoint 切换到 `http://127.0.0.1:27123/mcp/`。诊断脚本读取 Codex 的实际配置和凭据来源，核对插件身份、启用状态、API key、超时、回环边界，并执行经过认证且结构完整的 MCP `initialize` 请求；HTTPS 证书不受信任时诊断会失败并提示信任证书或改用 HTTP fallback。
 
 ## Data ownership
 

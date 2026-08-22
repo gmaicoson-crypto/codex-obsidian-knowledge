@@ -21,6 +21,12 @@ tags:
 
 Stable entry point: goal, current behavior, status, key entry points, evidence links, and open risks.
 
+## Project-level notes
+
+`<project>/00-项目总览.md` uses `type: code-project-overview`, `project`, `review`, `updated`, and `tags`. It is a compact index of purpose, architecture, status, risks, and feature links.
+
+`<project>/01-架构与术语.md` uses `type: code-project-architecture`, `project`, `review`, `updated`, and `tags`. It records components, boundaries, data flow, terms, compatibility assumptions, and evidence. It is created or updated only when architecture evidence exists.
+
 ## `01-实现细节.md`
 
 Problem context, old behavior, call chain, data structures, changed files, edge cases, and compatibility notes. Record facts and cite paths or symbols when available.
@@ -54,3 +60,5 @@ Every code example should carry these fields:
 ## Project overview rule
 
 `00-项目总览.md` is a compact index, not a duplicate of every feature note. It should list the project purpose, architecture, feature status matrix, current risks, and links to feature directories.
+
+Project and feature IDs must comply with [path-policy.md](path-policy.md). Before writing, candidates must comply with [redaction-policy.md](redaction-policy.md); a secret scan failure is a blocked write, not a warning.

@@ -1,6 +1,7 @@
 ---
 type: code-project-overview
 project: <project-id>
+review: pending
 updated: YYYY-MM-DD
 tags:
   - code

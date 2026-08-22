@@ -1,0 +1,10 @@
+{
+  "pluginId": "obsidian-local-rest-api",
+  "version": "5.1.0",
+  "releaseBase": "https://github.com/coddingtonbear/obsidian-local-rest-api/releases/download/5.1.0",
+  "assets": {
+    "main.js": "c3bf3ef644c5ade946c4ab64821a5969a92124e00afb4dc9bac4034d482ce131",
+    "manifest.json": "6c0d8390e6aa3f3515c834e2b4174545cf0cd20c5dbb116216e5d36b72af8437",
+    "styles.css": "a8b5c52e4974bd356225a17d64e6ea25502206ad860641da260fdc14430426f8"
+  }
+}

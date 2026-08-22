@@ -50,7 +50,7 @@
 - Codex Desktop/CLI；
 - Obsidian 桌面版 1.13.1 或更高版本，并至少创建或打开一个 Vault（固定依赖的 Local REST API 5.1.0 要求该最低版本）。
 
-首次使用时，本仓库的 Codex 指令会先请求用户确认，然后自动下载并启用 Obsidian 社区插件 `Local REST API with MCP`，生成本机 API key，并配置 Codex 的本地 MCP 连接。用户无需预先安装 Node.js、Python 或其他 MCP server。
+首次使用时，本仓库的 Codex 指令会先请求用户确认，然后自动下载并启用 Obsidian 社区插件 `Local REST API with MCP`，校验固定资产哈希，生成本机 API key，并配置 Codex 的本地 MCP 连接。用户无需预先安装 Node.js、Python 或其他 MCP server。
 
 ## Codex plugin distribution
 
@@ -96,12 +96,12 @@ bash ./scripts/bootstrap.sh --approve
 
 脚本会自动完成：
 
-1. 从固定版本的 Local REST API GitHub Release 下载 `main.js`、`manifest.json` 和 `styles.css`；
+1. 从固定版本的 Local REST API GitHub Release 下载 `main.js`、`manifest.json` 和 `styles.css`，并校验 `scripts/upstream-assets.json` 中的 SHA-256；
 2. 识别 Obsidian Vault；多个 Vault 时让用户选择；
 3. 将插件放入 `<vault>/.obsidian/plugins/obsidian-local-rest-api/`；
 4. 启用社区插件并写入 API key；
 5. 配置 Codex 的 `[mcp_servers.obsidian]`；
-6. 将知识笔记根目录写入 `<vault>/.codex-obsidian-knowledge.json`。
+6. 将知识笔记根目录写入 `<vault>/.codex-obsidian-knowledge.json`；所有 Vault、插件和 Codex 配置变更先进入临时区，提交失败时恢复原文件。
 
 如果有多个 Vault，也可以直接指定路径：
 
@@ -136,6 +136,8 @@ bash ./scripts/bootstrap.sh --vault '/Users/you/Obsidian/MyVault' --approve --al
 HTTP fallback 仍使用 Bearer API key，只接受 `127.0.0.1`，不要将 endpoint 暴露到局域网或公网。
 bootstrap 会在用户明确选择 fallback 时同步启用插件的回环 HTTP server；doctor 会读取 Codex 的实际 MCP 配置和环境变量，并执行经过认证的 MCP `initialize` 请求。
 
+Windows 和 macOS 脚本都遵守 `CODEX_HOME`；macOS 默认还会为 GUI/新 zsh 进程维护 `~/.zshenv` 中的受标记凭据块。若不希望脚本持久化环境变量，可使用 `-NoSecretImport` 或 `--no-secret-import`，然后在启动 Codex 前自行设置 `OBSIDIAN_LOCAL_REST_API_KEY`。
+
 ## Use the Skill
 
 当本仓库的 marketplace 已加载后，在代码讨论完成时明确触发：
@@ -163,9 +165,13 @@ bootstrap 会在用户明确选择 fallback 时同步启用插件的回环 HTTP 
 | `templates/` | 项目与功能笔记模板 |
 | `scripts/bootstrap.ps1` | Windows 自动安装插件、生成 key 并配置 Codex MCP |
 | `scripts/bootstrap.sh` | macOS 自动安装插件、生成 key 并配置 Codex MCP |
+| `scripts/upstream-assets.json` | 固定上游版本、下载地址和资产 SHA-256 |
 | `scripts/install-plugin.ps1` / `scripts/install-plugin.sh` | 由 Codex 执行的本仓库插件安装入口 |
 | `scripts/install.ps1` | 已安装插件时的 Windows 连接配置脚本 |
 | `scripts/doctor.ps1` / `scripts/doctor.sh` | 检查插件、endpoint、环境变量和 MCP 配置 |
+| `scripts/scan-sensitive-content.ps1` | 写入前扫描候选 Markdown 中的凭据和敏感内容 |
+| `scripts/validate-note-path.ps1` | 校验 Vault 内的 noteRoot、项目 ID 和功能 ID |
+| `tests/` 和 `.github/workflows/ci.yml` | Windows/macOS 仓库验证和持续集成 |
 | `docs/workflow.md` | 从对话到知识沉淀的完整流程 |
 | `docs/development.md` | 如何扩展 Skill、模板和脚本 |
 | `docs/security.md` | 凭据、HTTP fallback 和写入边界 |
@@ -173,6 +179,8 @@ bootstrap 会在用户明确选择 fallback 时同步启用插件的回环 HTTP 
 ## Privacy and safety
 
 默认只处理用户明确指定的当前对话和当前项目。写入前必须展示预览并获得确认。API key、密码、token、cookie、私钥和未脱敏个人标识不得进入 Obsidian 笔记或 Git 仓库；应以 `[REDACTED]` 替代。
+
+项目和功能目录使用安全 slug；写入前必须验证完整目标路径，并通过敏感内容扫描。扫描失败会阻止写入，不会只作为提示继续执行。
 
 本项目只负责 Codex Skill、模板和连接配置；它不上传对话，不托管 Obsidian Vault，也不提供远程服务器。
 

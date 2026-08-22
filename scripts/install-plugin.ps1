@@ -1,4 +1,4 @@
-[CmdletBinding()]
+﻿[CmdletBinding()]
 param(
     [switch]$Approve
 )
@@ -56,6 +56,17 @@ if ($marketplaceListExitCode -ne 0) {
     throw "Could not inspect configured Codex marketplaces. No files or configuration were changed. Exit code: $marketplaceListExitCode"
 }
 $marketplaces = $marketplaceLines | Out-String
+$pluginLines = & codex plugin list 2>&1
+$pluginListExitCode = $LASTEXITCODE
+if ($pluginListExitCode -ne 0) {
+    throw "Could not inspect installed Codex plugins. No files or configuration were changed. Exit code: $pluginListExitCode"
+}
+$plugins = $pluginLines | Out-String
+$installedPattern = '(?m)^\s*' + [regex]::Escape($pluginSelector) + '\s+installed'
+$pluginAlreadyInstalled = $plugins -match $installedPattern
+if (-not $pluginAlreadyInstalled -and (Test-Path -LiteralPath $cachePath)) {
+    throw "Plugin cache path already exists and is not reported as this installed plugin: $cachePath. Refusing to overwrite it."
+}
 if ($marketplaces -notmatch [regex]::Escape($marketplaceName)) {
     Write-Output "Registering repository marketplace: $marketplaceName"
     Invoke-Codex @('plugin', 'marketplace', 'add', $repoRoot)
@@ -70,18 +81,8 @@ else {
     Write-Output "Repository marketplace is already registered: $marketplaceName"
 }
 
-$pluginLines = & codex plugin list 2>&1
-$pluginListExitCode = $LASTEXITCODE
-if ($pluginListExitCode -ne 0) {
-    throw "Could not inspect installed Codex plugins. No files or configuration were changed. Exit code: $pluginListExitCode"
-}
-$plugins = $pluginLines | Out-String
-$installedPattern = '(?m)^\s*' + [regex]::Escape($pluginSelector) + '\s+installed'
-if ($plugins -match $installedPattern) {
+if ($pluginAlreadyInstalled) {
     Write-Output "Plugin is already installed: $pluginSelector"
-}
-elseif (Test-Path -LiteralPath $cachePath) {
-    throw "Plugin cache path already exists and is not reported as this installed plugin: $cachePath. Refusing to overwrite it."
 }
 else {
     Write-Output "Installing plugin: $pluginSelector"

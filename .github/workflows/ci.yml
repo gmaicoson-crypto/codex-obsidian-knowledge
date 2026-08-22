@@ -1,0 +1,33 @@
+name: validate
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate PowerShell repository
+        shell: pwsh
+        run: ./tests/repository-validation.ps1
+
+  macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - name: Install shellcheck
+        run: brew install shellcheck
+      - name: Run shellcheck
+        shell: bash
+        run: shellcheck -S error scripts/*.sh tests/repository-validation.sh
+      - name: Validate shell repository
+        shell: bash
+        run: bash tests/repository-validation.sh

@@ -11,6 +11,8 @@ Turn a completed or discussed coding task into durable, source-linked knowledge 
 
 Before choosing note paths, look for the integration settings file `.codex-obsidian-knowledge.json` at the Vault root through the connected Obsidian MCP. If it exists, use its `noteRoot` value as a relative path prefix. If it is absent or empty, use the Vault root. Never treat an absolute path or a `..` segment as a valid note root.
 
+Read [path-policy.md](references/path-policy.md) and [redaction-policy.md](references/redaction-policy.md) before drafting targets or content. Project IDs, feature IDs, note paths, and sensitive-content handling must follow those references.
+
 ## First-run connection
 
 If the Obsidian MCP server is unavailable and this repository is present as the user's project, use the repository's cross-platform bootstrap flow before attempting any note read or write:
@@ -49,6 +51,10 @@ Before the preview, use read-only inspection where available:
 - Existing project/feature notes in Obsidian for merge and duplicate detection.
 
 Do not modify source code, run destructive commands, or expose secrets during capture. Treat a design or plan as design; treat code as implemented only when a file change is evidenced; treat it as verified only when the relevant test or build evidence exists.
+
+Immediately before an approved write, validate the complete target path and scan the candidate Markdown for sensitive content. When a local candidate file can be materialized, use `scripts/scan-sensitive-content.ps1`; otherwise perform the same rule-based scan and report that the MCP write was not locally scanner-verified. A detected credential blocks the write until the preview is redacted.
+
+For a new project or feature, use `scripts/validate-note-path.ps1` when available to validate the Vault, note root, project ID, and feature ID before invoking the MCP write.
 
 Use these statuses:
 
@@ -94,5 +100,7 @@ The canonical layout, relative to the configured note root, is:
 For example, when `noteRoot` is `Codex知识库`, the project overview is written to `Codex知识库/<project>/00-项目总览.md` relative to the Vault.
 
 Create a feature directory for a new feature. For an existing feature, preview a patch to the affected notes rather than replacing the whole directory. Keep implementation details, evidence, reusable knowledge, and future work separate. Update the project overview only with stable conclusions and confirmed status.
+
+Use safe slug IDs for `<project>` and `<feature>` and retain display names in frontmatter/headings. Validate every generated path segment immediately before the MCP operation; do not let Markdown, wikilinks, or user text introduce extra path components.
 
 After writing, read back the changed notes or use the MCP response to verify paths and report exactly what changed.

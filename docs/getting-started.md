@@ -12,7 +12,7 @@
 - Obsidian 桌面版 1.13.1 或更高版本，并至少创建或打开一个 Vault；
 - 首次初始化时可以访问 GitHub，用于下载第三方 `Local REST API with MCP` Obsidian 插件。
 
-不需要预先安装 Node.js、Python 或其他 MCP server。
+脚本会从仓库内的 `scripts/upstream-assets.json` 读取固定版本和 SHA-256，并遵守 `CODEX_HOME`；不需要预先安装 Node.js、Python 或其他 MCP server。
 
 ## 从 Git clone 到首次使用
 
@@ -103,6 +103,8 @@ bash ./scripts/bootstrap.sh \
 ```
 
 HTTP fallback 仍只监听 `127.0.0.1` 并使用 Bearer API key，不要把它暴露到局域网或公网。
+
+如果不希望把 API key 导入用户环境或 macOS 的 `~/.zshenv`，可追加 `-NoSecretImport` 或 `--no-secret-import`，并在启动 Codex 前自行设置 `OBSIDIAN_LOCAL_REST_API_KEY`。
 
 ### 4. 重启并运行诊断
 

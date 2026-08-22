@@ -37,11 +37,41 @@ if [[ ! -f "$marketplace_path" ]]; then
   exit 1
 fi
 
-plugin_name='codex-obsidian-knowledge'
-marketplace_name='codex-obsidian-knowledge-repo'
+if ! command -v osascript >/dev/null 2>&1; then
+  printf '%s\n' 'osascript was not found; macOS JSON manifest parsing is required.' >&2
+  exit 1
+fi
+json_field() {
+  local path="$1" field="$2"
+  JSON_PATH="$path" JSON_FIELD="$field" osascript -l JavaScript <<'JXA'
+ObjC.import('Foundation');
+const path = $.getenv('JSON_PATH');
+const field = $.getenv('JSON_FIELD');
+  const raw = ObjC.unwrap($.NSString.stringWithContentsOfFileEncodingError(path, $.NSUTF8StringEncoding, null));
+  const data = JSON.parse(raw.replace(/^\uFEFF/, ''));
+if (data[field] !== undefined && data[field] !== null) console.log(String(data[field]));
+JXA
+}
+plugin_name="$(json_field "$manifest_path" name)"
+marketplace_name="$(json_field "$marketplace_path" name)"
+if [[ -z "$plugin_name" || -z "$marketplace_name" ]]; then
+  printf '%s\n' 'Plugin or marketplace manifest is missing its name.' >&2
+  exit 1
+fi
 plugin_selector="$plugin_name@$marketplace_name"
 user_codex_root="${CODEX_HOME:-$HOME/.codex}"
 cache_path="$user_codex_root/plugins/cache/$marketplace_name/$plugin_name/local"
+
+if ! plugins="$(codex plugin list 2>&1)"; then
+  printf '%s\n' 'Could not inspect installed Codex plugins. No files or configuration were changed.' >&2
+  exit 1
+fi
+plugin_already_installed=0
+if printf '%s\n' "$plugins" | grep -Eq "^[[:space:]]*${plugin_selector}[[:space:]]+installed"; then plugin_already_installed=1; fi
+if [[ "$plugin_already_installed" -eq 0 && -e "$cache_path" ]]; then
+  printf 'Plugin cache path already exists and is not reported as this installed plugin: %s. Refusing to overwrite it.\n' "$cache_path" >&2
+  exit 1
+fi
 
 if ! marketplaces="$(codex plugin marketplace list 2>&1)"; then
   printf '%s\n' 'Could not inspect configured Codex marketplaces. No files or configuration were changed.' >&2
@@ -59,15 +89,8 @@ else
   printf 'Repository marketplace is already registered: %s\n' "$marketplace_name"
 fi
 
-if ! plugins="$(codex plugin list 2>&1)"; then
-  printf '%s\n' 'Could not inspect installed Codex plugins. No files or configuration were changed.' >&2
-  exit 1
-fi
-if printf '%s\n' "$plugins" | grep -Eq "^[[:space:]]*${plugin_selector}[[:space:]]+installed"; then
+if [[ "$plugin_already_installed" -eq 1 ]]; then
   printf 'Plugin is already installed: %s\n' "$plugin_selector"
-elif [[ -e "$cache_path" ]]; then
-  printf 'Plugin cache path already exists and is not reported as this installed plugin: %s. Refusing to overwrite it.\n' "$cache_path" >&2
-  exit 1
 else
   printf 'Installing plugin: %s\n' "$plugin_selector"
   codex plugin add "$plugin_selector"
