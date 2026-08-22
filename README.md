@@ -14,6 +14,18 @@
 
 默认不会因为普通代码讨论而自动写入，也不会删除笔记或修改源代码。
 
+## Quick start
+
+第一次使用请按[从 Git clone 到首次使用](docs/getting-started.md)操作，流程包括：
+
+1. 克隆仓库并在 Codex 中打开；
+2. 安装本仓库提供的 Codex 插件；
+3. 经确认后初始化 Obsidian 的 Local REST API 连接；
+4. 重启 Obsidian 和 Codex，运行 doctor；
+5. 在新对话中先预览知识总结，再确认写入。
+
+如果只想了解首次安装会修改哪些本机配置，请先阅读该指南的“初始化 Obsidian 连接”部分。
+
 ## Output layout
 
 ```text
@@ -146,6 +158,7 @@ bootstrap 会在用户明确选择 fallback 时同步启用插件的回环 HTTP 
 |---|---|
 | `.agents/plugins/marketplace.json` | 仓库级 Codex marketplace，自动暴露本插件 |
 | `AGENTS.md` | 告诉 Codex 如何进行首次检测、确认和跨平台初始化 |
+| `docs/getting-started.md` | 从 `git clone` 到首次使用的完整上手流程 |
 | `skills/code-knowledge-capture/` | 可复用 Codex Skill、知识模式和审核策略 |
 | `templates/` | 项目与功能笔记模板 |
 | `scripts/bootstrap.ps1` | Windows 自动安装插件、生成 key 并配置 Codex MCP |
