@@ -1,5 +1,11 @@
 # Workflow
 
+## First-run integration setup
+
+当仓库被 Codex 打开时，先由 `AGENTS.md` 检查本地 Obsidian MCP 是否已经可用。若不可用，Codex 必须先解释以下变更并取得用户确认：下载第三方 Local REST API 插件、修改选定 Vault 的 `.obsidian` 配置、生成 API key、更新用户级 Codex MCP 配置。
+
+确认后在 Windows 执行 `scripts/bootstrap.ps1 -Approve`，在 macOS 执行 `bash scripts/bootstrap.sh --approve`。多个 Vault 时让用户选择；无法自动识别时只询问 Vault 的绝对路径。安装完成后重启 Obsidian 和 Codex，并运行对应 doctor 脚本。连接未通过诊断前，不得声称已同步或写入 Obsidian。
+
 ## 触发与范围
 
 普通代码问答、代码修改和调试不会自动写入知识库。只有用户明确提出总结、沉淀、归档或写入 Obsidian 时，Skill 才进入捕获流程。

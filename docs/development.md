@@ -42,4 +42,6 @@ foreach ($path in @('.\scripts\install.ps1', '.\scripts\doctor.ps1')) {
 }
 ```
 
+macOS 初始化脚本应在 macOS 测试机上执行语法检查和临时 Vault 集成测试。测试覆盖固定的 Local REST API 版本下载、首次生成 API key、已有 `data.json` 的幂等更新、`community-plugins.json` / `app.json` 配置、Codex MCP 配置以及 HTTPS/HTTP endpoint 检查。不要把真实 Vault API key 用作测试 fixture。
+
 集成测试应使用临时测试 Vault，验证插件配置解析、配置幂等性、HTTP/HTTPS endpoint 检查和失败时不泄露 key。不要把真实 Vault API key 用作测试 fixture。

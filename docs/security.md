@@ -2,7 +2,9 @@
 
 ## Secret handling
 
-`install.ps1` 从 Local REST API 插件的 `data.json` 读取 API key，只将它写入当前 Windows 用户的 `OBSIDIAN_LOCAL_REST_API_KEY` 环境变量。脚本输出只显示变量名和 endpoint，不显示 key。不要提交 `.env`、插件运行状态或诊断日志。
+首次初始化脚本从 Local REST API 插件的 `data.json` 读取或生成 API key，只将它写入当前用户的 `OBSIDIAN_LOCAL_REST_API_KEY` 环境变量和插件自己的 `data.json`。脚本输出只显示变量名和 endpoint，不显示 key。不要提交 `.env`、插件运行状态或诊断日志。
+
+初始化必须经过用户确认。脚本当前固定从 Local REST API `5.1.0` GitHub Release 下载 `main.js`、`manifest.json` 和 `styles.css`，不执行下载内容之外的安装器，也不把 API key 写入仓库。升级上游插件版本时应同步审查并更新这个固定版本。
 
 知识沉淀阶段必须脱敏 API key、密码、Bearer token、cookie、私钥和个人标识。笔记可以记录“使用了凭据”这一事实，但不能记录凭据值。
 
@@ -20,6 +22,7 @@ HTTPS endpoint 是首选。Local REST API 通常使用本机自签名证书，�
 
 | Threat | Mitigation |
 |---|---|
+| 未经同意安装第三方插件 | 首次初始化前展示范围并要求明确确认 |
 | 误写或过早写入 | 明确触发 + preview-first + explicit confirmation |
 | 重复创建知识 | project/feature/source thread/content hash 去重 |
 | 把推断当事实 | 分开记录证据、不确定项和验证边界 |

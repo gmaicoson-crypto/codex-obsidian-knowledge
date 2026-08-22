@@ -33,42 +33,67 @@
 
 ## Prerequisites
 
-- Windows 10/11、PowerShell 5.1 或 PowerShell 7。
-- Obsidian 已安装并能打开目标 Vault。
-- Obsidian 社区插件 `Local REST API` 已安装并启用，且其版本提供 MCP endpoint。
-- Codex Desktop/CLI 支持本地 MCP 配置。
+用户只需要安装：
 
-Local REST API 插件是独立依赖，不包含在本项目中。首次使用时，在 Obsidian 中启用插件并记录它生成的 API key；安装脚本会从 Vault 的插件配置中读取 key，并只保存到当前 Windows 用户环境变量，不会把 key 写入仓库。
+- Codex Desktop/CLI；
+- Obsidian 桌面版，并至少创建或打开一个 Vault。
 
-## Install the connection
+首次使用时，本仓库的 Codex 指令会先请求用户确认，然后自动下载并启用 Obsidian 社区插件 `Local REST API with MCP`，生成本机 API key，并配置 Codex 的本地 MCP 连接。用户无需预先安装 Node.js、Python 或其他 MCP server。
 
-在本仓库根目录执行，替换为自己的 Vault 路径：
+## First-run setup
 
-```powershell
-.\scripts\install.ps1 -VaultPath 'C:\path\to\your\vault'
-```
-
-脚本默认把知识笔记写入 Vault 下的 `Codex知识库`，并在 Vault 根目录保存 `.codex-obsidian-knowledge.json`。可以通过 `-NoteRoot` 自定义相对路径，例如：
+当 Codex 打开本仓库后，如果发现 Obsidian 连接尚未准备好，应先说明将要修改的范围并请求确认。确认后：
 
 ```powershell
-.\scripts\install.ps1 `
-  -VaultPath 'C:\path\to\your\vault' `
-  -NoteRoot '知识库\代码沉淀'
+.\scripts\bootstrap.ps1 -Approve
 ```
 
-脚本默认配置插件的 HTTPS MCP endpoint `https://127.0.0.1:27124/mcp/`。如果本机客户端无法信任插件的自签名证书，可以使用仅绑定本机回环地址的 HTTP fallback：
+macOS：
+
+```bash
+bash ./scripts/bootstrap.sh --approve
+```
+
+脚本会自动完成：
+
+1. 从固定版本的 Local REST API GitHub Release 下载 `main.js`、`manifest.json` 和 `styles.css`；
+2. 识别 Obsidian Vault；多个 Vault 时让用户选择；
+3. 将插件放入 `<vault>/.obsidian/plugins/obsidian-local-rest-api/`；
+4. 启用社区插件并写入 API key；
+5. 配置 Codex 的 `[mcp_servers.obsidian]`；
+6. 将知识笔记根目录写入 `<vault>/.codex-obsidian-knowledge.json`。
+
+如果有多个 Vault，也可以直接指定路径：
 
 ```powershell
-.\scripts\install.ps1 -VaultPath 'C:\path\to\your\vault' -NoteRoot 'Codex知识库' -AllowInsecureHttp
+.\scripts\bootstrap.ps1 -VaultPath 'C:\path\to\your\vault' -Approve
 ```
 
-重启 Codex 后运行诊断：
+```bash
+bash ./scripts/bootstrap.sh --vault '/Users/you/Obsidian/MyVault' --approve
+```
+
+首次安装后需要重启一次 Obsidian，使其加载刚下载的插件，然后重启 Codex。诊断命令：
 
 ```powershell
 .\scripts\doctor.ps1 -VaultPath 'C:\path\to\your\vault'
 ```
 
-若使用 HTTP fallback，API key 仍通过 Bearer header 发送，只接受 `127.0.0.1`，不要把该 endpoint 暴露到局域网或公网。
+```bash
+bash ./scripts/doctor.sh --vault '/Users/you/Obsidian/MyVault'
+```
+
+默认使用插件的 HTTPS MCP endpoint `https://127.0.0.1:27124/mcp/`。如果客户端无法信任插件的自签名证书，可以选择仅绑定本机回环地址的 HTTP fallback：
+
+```powershell
+.\scripts\bootstrap.ps1 -VaultPath 'C:\path\to\your\vault' -Approve -AllowInsecureHttp
+```
+
+```bash
+bash ./scripts/bootstrap.sh --vault '/Users/you/Obsidian/MyVault' --approve --allow-insecure-http
+```
+
+HTTP fallback 仍使用 Bearer API key，只接受 `127.0.0.1`，不要将 endpoint 暴露到局域网或公网。
 
 ## Use the Skill
 
@@ -90,10 +115,13 @@ Local REST API 插件是独立依赖，不包含在本项目中。首次使用�
 
 | Path | Purpose |
 |---|---|
+| `AGENTS.md` | 告诉 Codex 如何进行首次检测、确认和跨平台初始化 |
 | `skills/code-knowledge-capture/` | 可复用 Codex Skill、知识模式和审核策略 |
 | `templates/` | 项目与功能笔记模板 |
-| `scripts/install.ps1` | 从 Vault 配置 MCP 和安全导入 API key |
-| `scripts/doctor.ps1` | 检查插件、endpoint、环境变量和 MCP 握手 |
+| `scripts/bootstrap.ps1` | Windows 自动安装插件、生成 key 并配置 Codex MCP |
+| `scripts/bootstrap.sh` | macOS 自动安装插件、生成 key 并配置 Codex MCP |
+| `scripts/install.ps1` | 已安装插件时的 Windows 连接配置脚本 |
+| `scripts/doctor.ps1` / `scripts/doctor.sh` | 检查插件、endpoint、环境变量和 MCP 配置 |
 | `docs/workflow.md` | 从对话到知识沉淀的完整流程 |
 | `docs/development.md` | 如何扩展 Skill、模板和脚本 |
 | `docs/security.md` | 凭据、HTTP fallback 和写入边界 |

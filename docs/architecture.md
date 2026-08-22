@@ -18,6 +18,8 @@ Codex MCP client ── Bearer token ──> Obsidian Local REST API MCP endpoin
                                       Obsidian Vault Markdown
 ```
 
+首次打开仓库时，根目录 `AGENTS.md` 负责发现连接状态。用户确认后，`bootstrap.ps1` 或 `bootstrap.sh` 下载并启用 Local REST API 插件、生成本地 API key，并配置 Codex MCP。之后 Skill 才使用本机 endpoint。
+
 本仓库把 Skill、笔记模式、连接安装和诊断脚本放在一个发布单元里；它不实现或托管一个新的远程 MCP 服务。MCP 服务由 Obsidian 的 Local REST API 社区插件提供，Codex 通过本机 endpoint 调用它。
 
 ## Capture path
@@ -31,13 +33,13 @@ Codex MCP client ── Bearer token ──> Obsidian Local REST API MCP endpoin
 
 ## Connection path
 
-`scripts/install.ps1` 读取目标 Vault 中的：
+`scripts/bootstrap.ps1` / `scripts/bootstrap.sh` 首次配置目标 Vault 中的：
 
 ```text
 <vault>/.obsidian/plugins/obsidian-local-rest-api/data.json
 ```
 
-它提取 API key，保存到当前 Windows 用户环境变量 `OBSIDIAN_LOCAL_REST_API_KEY`，在 Vault 根目录写入 `.codex-obsidian-knowledge.json` 保存 `noteRoot`，并在 Codex 配置中写入：
+它保留或生成 API key，保存到当前用户的 `OBSIDIAN_LOCAL_REST_API_KEY` 环境变量，在 Vault 根目录写入 `.codex-obsidian-knowledge.json` 保存 `noteRoot`，并在 Codex 配置中写入：
 
 ```toml
 [mcp_servers.obsidian]
@@ -47,14 +49,14 @@ startup_timeout_sec = 20
 tool_timeout_sec = 60
 ```
 
-当自签名 HTTPS 证书无法被客户端信任时，`-AllowInsecureHttp` 将 endpoint 切换到 `http://127.0.0.1:27123/mcp/`。`scripts/doctor.ps1` 检查配置、端口和 HTTP endpoint 的 JSON-RPC/SSE `initialize` 响应；HTTPS 模式下只验证 TCP，证书信任交由实际 MCP 客户端验证。
+当自签名 HTTPS 证书无法被客户端信任时，`-AllowInsecureHttp` 或 `--allow-insecure-http` 将 endpoint 切换到 `http://127.0.0.1:27123/mcp/`。诊断脚本检查配置、API key 和 endpoint；HTTPS 模式下证书信任交由实际 MCP 客户端验证。
 
 ## Data ownership
 
 | Data | Owner | Stored where |
 |---|---|---|
 | Skill instructions and templates | This repository | GitHub/Codex plugin package |
-| API key | User | Windows user environment and Obsidian plugin settings |
+| API key | User | User environment and Obsidian plugin settings |
 | Coding evidence and summaries | User | Obsidian Vault |
 | MCP transport | Local REST API plugin | `127.0.0.1` endpoint |
 

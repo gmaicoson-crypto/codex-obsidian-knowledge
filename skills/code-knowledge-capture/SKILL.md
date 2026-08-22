@@ -11,6 +11,15 @@ Turn a completed or discussed coding task into durable, source-linked knowledge 
 
 Before choosing note paths, look for the integration settings file `.codex-obsidian-knowledge.json` at the Vault root through the connected Obsidian MCP. If it exists, use its `noteRoot` value as a relative path prefix. If it is absent or empty, use the Vault root. Never treat an absolute path or a `..` segment as a valid note root.
 
+## First-run connection
+
+If the Obsidian MCP server is unavailable and this repository is present as the user's project, use the repository's cross-platform bootstrap flow before attempting any note read or write:
+
+- Windows: explain the third-party download and configuration changes, obtain confirmation, then run `scripts/bootstrap.ps1 -Approve`.
+- macOS: explain the same changes, obtain confirmation, then run `bash scripts/bootstrap.sh --approve`.
+
+If the Vault cannot be uniquely discovered, ask for its absolute path and pass it to the bootstrap script. Do not print the API key. Do not claim the connection is ready until the corresponding doctor script succeeds after Obsidian has loaded the plugin.
+
 ## Invocation and approval
 
 Use this skill only when the user explicitly requests knowledge capture, for example:
