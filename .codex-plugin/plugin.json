@@ -13,6 +13,8 @@
     "developerName": "Open source contributors",
     "category": "Productivity",
     "capabilities": [],
-    "defaultPrompt": "Use code-knowledge-capture to preview a structured summary of this code discussion before writing it to Obsidian."
+    "defaultPrompt": [
+      "Use code-knowledge-capture to preview a structured summary of this code discussion before writing it to Obsidian."
+    ]
   }
 }

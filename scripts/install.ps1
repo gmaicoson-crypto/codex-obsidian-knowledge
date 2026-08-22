@@ -61,11 +61,22 @@ if ([string]::IsNullOrWhiteSpace($apiKey)) {
     throw 'The Local REST API plugin has no API key. Open its settings in Obsidian and generate one.'
 }
 
+if ($Protocol -eq 'http' -and -not $AllowInsecureHttp) {
+    throw 'Using HTTP requires the explicit -AllowInsecureHttp switch.'
+}
 if ($AllowInsecureHttp) {
     $Protocol = 'http'
     if ($Port -eq 27124) {
         $Port = 27123
     }
+    if ($pluginData.psobject.Properties.Name -contains 'enableInsecureServer') {
+        $pluginData.enableInsecureServer = $true
+    }
+    else {
+        $pluginData | Add-Member -MemberType NoteProperty -Name enableInsecureServer -Value $true
+    }
+    $pluginData | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath $dataPath -Encoding UTF8
+    Write-Output 'Enabled the Local REST API loopback HTTP server.'
 }
 
 $endpoint = '{0}://127.0.0.1:{1}/mcp/' -f $Protocol, $Port

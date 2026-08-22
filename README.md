@@ -36,9 +36,37 @@
 用户只需要安装：
 
 - Codex Desktop/CLI；
-- Obsidian 桌面版，并至少创建或打开一个 Vault。
+- Obsidian 桌面版 1.13.1 或更高版本，并至少创建或打开一个 Vault（固定依赖的 Local REST API 5.1.0 要求该最低版本）。
 
 首次使用时，本仓库的 Codex 指令会先请求用户确认，然后自动下载并启用 Obsidian 社区插件 `Local REST API with MCP`，生成本机 API key，并配置 Codex 的本地 MCP 连接。用户无需预先安装 Node.js、Python 或其他 MCP server。
+
+## Codex plugin distribution
+
+仓库包含 `.agents/plugins/marketplace.json` 和自动安装脚本。用户可以直接把本地项目文件夹或开源仓库地址交给 Codex，并明确要求“将这个仓库安装为 Codex 插件”；Codex 会读取 `AGENTS.md`，在确认后执行安装脚本。用户不需要手动创建 `~/.agents/plugins/marketplace.json`，也不需要把插件复制到 `~/.codex/plugins`。
+
+示例请求：
+
+```text
+请把当前文件夹（或这个仓库地址）安装为 Codex 插件并启用。先说明将修改的 Codex 配置范围，确认后执行仓库里的安装入口。
+```
+
+安装脚本会注册仓库 marketplace，然后调用 Codex CLI 安装插件。清单使用 `AVAILABLE`，避免客户端在用户只是打开仓库时绕过安全检查自动写入插件缓存；只有 Codex 根据明确的安装请求执行脚本时才会安装。
+
+安装前会检查同名 marketplace 和 Codex 插件缓存。如果发现它们已经指向其他位置，或目标缓存目录已存在但不能确认是本插件，脚本会停止并报告冲突，不会覆盖、删除或替换用户已有的插件文件。
+
+Codex 也可以直接执行以下入口：
+
+```powershell
+.\scripts\install-plugin.ps1 -Approve
+```
+
+macOS：
+
+```bash
+bash ./scripts/install-plugin.sh --approve
+```
+
+这一步只负责分发和加载 Codex 插件。Obsidian 的 `Local REST API with MCP` 属于第三方软件，仍必须遵循首次运行时的确认、安装和诊断流程，不能静默绕过。
 
 ## First-run setup
 
@@ -94,10 +122,11 @@ bash ./scripts/bootstrap.sh --vault '/Users/you/Obsidian/MyVault' --approve --al
 ```
 
 HTTP fallback 仍使用 Bearer API key，只接受 `127.0.0.1`，不要将 endpoint 暴露到局域网或公网。
+bootstrap 会在用户明确选择 fallback 时同步启用插件的回环 HTTP server；doctor 会读取 Codex 的实际 MCP 配置和环境变量，并执行经过认证的 MCP `initialize` 请求。
 
 ## Use the Skill
 
-把本插件包安装到 Codex 的插件/Skill 目录后，在代码讨论完成时明确触发：
+当本仓库的 marketplace 已加载后，在代码讨论完成时明确触发：
 
 ```text
 将本次代码对话进行知识总结沉淀，先给我预览，不要立即写入。
@@ -115,11 +144,13 @@ HTTP fallback 仍使用 Bearer API key，只接受 `127.0.0.1`，不要将 endpo
 
 | Path | Purpose |
 |---|---|
+| `.agents/plugins/marketplace.json` | 仓库级 Codex marketplace，自动暴露本插件 |
 | `AGENTS.md` | 告诉 Codex 如何进行首次检测、确认和跨平台初始化 |
 | `skills/code-knowledge-capture/` | 可复用 Codex Skill、知识模式和审核策略 |
 | `templates/` | 项目与功能笔记模板 |
 | `scripts/bootstrap.ps1` | Windows 自动安装插件、生成 key 并配置 Codex MCP |
 | `scripts/bootstrap.sh` | macOS 自动安装插件、生成 key 并配置 Codex MCP |
+| `scripts/install-plugin.ps1` / `scripts/install-plugin.sh` | 由 Codex 执行的本仓库插件安装入口 |
 | `scripts/install.ps1` | 已安装插件时的 Windows 连接配置脚本 |
 | `scripts/doctor.ps1` / `scripts/doctor.sh` | 检查插件、endpoint、环境变量和 MCP 配置 |
 | `docs/workflow.md` | 从对话到知识沉淀的完整流程 |

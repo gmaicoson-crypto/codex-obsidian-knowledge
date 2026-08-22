@@ -49,7 +49,7 @@ startup_timeout_sec = 20
 tool_timeout_sec = 60
 ```
 
-当自签名 HTTPS 证书无法被客户端信任时，`-AllowInsecureHttp` 或 `--allow-insecure-http` 将 endpoint 切换到 `http://127.0.0.1:27123/mcp/`。诊断脚本检查配置、API key 和 endpoint；HTTPS 模式下证书信任交由实际 MCP 客户端验证。
+当自签名 HTTPS 证书无法被客户端信任时，`-AllowInsecureHttp` 或 `--allow-insecure-http` 会启用插件的回环 HTTP server，并将 endpoint 切换到 `http://127.0.0.1:27123/mcp/`。诊断脚本读取 Codex 的实际配置和凭据来源，核对插件 API key，并执行经过认证的 MCP `initialize` 请求；HTTPS 证书不受信任时诊断会失败并提示信任证书或改用 HTTP fallback。
 
 ## Data ownership
 

@@ -92,6 +92,8 @@ Report-Check 'Codex config' $configExists $resolvedConfig
 
 $config = ''
 $endpoint = $null
+$configEnvName = $null
+$configuredToken = $null
 if ($configExists) {
     $config = Get-Content -LiteralPath $resolvedConfig -Raw -Encoding UTF8
     $sectionMatch = [regex]::Match($config, '(?ms)^\[mcp_servers\.obsidian\]\s*$.*?(?=^\[|\z)')
@@ -107,28 +109,41 @@ if ($configExists) {
             Report-Check 'MCP endpoint' $false 'The section has no url entry'
         }
         $tokenMatch = [regex]::Match($sectionMatch.Value, '(?m)^\s*bearer_token_env_var\s*=\s*"(?<name>[^"]+)"')
-        $configEnvName = if ($tokenMatch.Success) { $tokenMatch.Groups['name'].Value } else { $envName }
-        $userToken = [Environment]::GetEnvironmentVariable($configEnvName, 'User')
-        Report-Check 'User API key variable' (-not [string]::IsNullOrWhiteSpace($userToken)) "$configEnvName is set (value hidden)"
+        if ($tokenMatch.Success) {
+            $configEnvName = $tokenMatch.Groups['name'].Value
+            $userToken = [Environment]::GetEnvironmentVariable($configEnvName, 'User')
+            $processToken = [Environment]::GetEnvironmentVariable($configEnvName, 'Process')
+            $configuredToken = if (-not [string]::IsNullOrWhiteSpace($userToken)) { $userToken } else { $processToken }
+            Report-Check 'Codex API key variable' (-not [string]::IsNullOrWhiteSpace($configuredToken)) "$configEnvName is available (value hidden)"
+            if ($null -ne $pluginData -and -not [string]::IsNullOrWhiteSpace([string]$pluginData.apiKey) -and -not [string]::IsNullOrWhiteSpace($configuredToken)) {
+                Report-Check 'API key match' ([string]$pluginData.apiKey -ceq $configuredToken) 'Plugin and Codex credential sources agree (values hidden)'
+            }
+        }
+        else {
+            Report-Check 'Codex API key variable' $false 'The MCP section has no bearer_token_env_var entry'
+        }
     }
 }
 else {
     Report-Check 'MCP section' $false 'Skipped because config.toml is missing'
     Report-Check 'MCP endpoint' $false 'Skipped because config.toml is missing'
-    Report-Check 'User API key variable' $false 'Skipped because config.toml is missing'
+    Report-Check 'Codex API key variable' $false 'Skipped because config.toml is missing'
 }
 
-if ($null -ne $endpoint) {
+if ($null -ne $endpoint -and -not [string]::IsNullOrWhiteSpace($configuredToken)) {
     try {
         $endpointUri = [System.Uri]$endpoint
+        $validScheme = $endpointUri.Scheme -in @('http', 'https')
+        Report-Check 'Endpoint scheme' $validScheme $endpointUri.Scheme
+        $loopbackOnly = $endpointUri.Host -eq '127.0.0.1'
+        Report-Check 'Endpoint boundary' $loopbackOnly $endpointUri.Host
+        if (-not $validScheme -or -not $loopbackOnly) { throw 'Unsupported endpoint URL.' }
         $tcpReachable = Test-TcpPort $endpointUri.Host $endpointUri.Port
         Report-Check 'Endpoint TCP' $tcpReachable ("{0}:{1}" -f $endpointUri.Host, $endpointUri.Port)
 
-        if ($tcpReachable -and $endpointUri.Scheme -eq 'http') {
-            $configuredName = $configEnvName
-            $token = [Environment]::GetEnvironmentVariable($configuredName, 'User')
+        if ($tcpReachable) {
             $headers = @{
-                Authorization = 'Bearer ' + $token
+                Authorization = 'Bearer ' + $configuredToken
                 Accept = 'application/json, text/event-stream'
             }
             $body = @{
@@ -152,6 +167,9 @@ if ($null -ne $endpoint) {
                             $jsonContent = $dataMatch.Groups[1].Value
                         }
                         $responseJson = $jsonContent | ConvertFrom-Json
+                        if ($null -ne $responseJson.error -or $null -eq $responseJson.result) {
+                            throw 'The server returned a JSON-RPC error or omitted result.'
+                        }
                         $serverName = [string]$responseJson.result.serverInfo.name
                         if ([string]::IsNullOrWhiteSpace($serverName)) { $serverName = 'MCP server responded' }
                         Report-Check 'MCP initialize' $true $serverName
@@ -165,11 +183,14 @@ if ($null -ne $endpoint) {
                 }
             }
             catch {
-                Report-Check 'MCP initialize' $false 'Request failed; check the plugin, port, and API key'
+                $detail = if ($endpointUri.Scheme -eq 'https') {
+                    'Request failed; check the plugin, API key, and trust for the Local REST API certificate'
+                }
+                else {
+                    'Request failed; check the plugin, port, API key, and insecure-server setting'
+                }
+                Report-Check 'MCP initialize' $false $detail
             }
-        }
-        elseif ($tcpReachable -and $endpointUri.Scheme -eq 'https') {
-            Report-Check 'MCP initialize' $true 'Skipped HTTP handshake; HTTPS certificate trust is client-specific'
         }
     }
     catch {

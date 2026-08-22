@@ -7,7 +7,7 @@ PLUGIN_RELEASE_BASE="https://github.com/coddingtonbear/obsidian-local-rest-api/r
 SECRET_ENV_NAME="OBSIDIAN_LOCAL_REST_API_KEY"
 NOTE_ROOT="Codex知识库"
 VAULT_PATH=""
-CODEX_CONFIG_PATH="${HOME}/.codex/config.toml"
+CODEX_CONFIG_PATH="${CODEX_HOME:-$HOME/.codex}/config.toml"
 APPROVED=0
 ALLOW_INSECURE_HTTP=0
 NO_SECRET_IMPORT=0
@@ -50,10 +50,10 @@ require_command() {
 
 normalize_note_root() {
   NOTE_ROOT="${NOTE_ROOT//\\//}"
-  NOTE_ROOT="${NOTE_ROOT#/}"
-  NOTE_ROOT="${NOTE_ROOT%/}"
   [[ "$NOTE_ROOT" != /* ]] || die "Note root must be relative to the Obsidian vault."
-  [[ "$NOTE_ROOT" != *".."* ]] || die "Note root cannot contain .. segments."
+  NOTE_ROOT="${NOTE_ROOT%/}"
+  [[ "$NOTE_ROOT" != "." ]] || NOTE_ROOT=""
+  [[ ! "$NOTE_ROOT" =~ (^|/)\.\.(/|$) ]] || die "Note root cannot contain .. segments."
 }
 
 discover_vaults() {
@@ -112,12 +112,13 @@ confirm_bootstrap() {
 write_json_with_jxa() {
   local target="$1"
   local mode="$2"
-  TARGET_PATH="$target" MODE="$mode" PLUGIN_ID="$PLUGIN_ID" NEW_API_KEY="${NEW_API_KEY:-}" osascript -l JavaScript <<'JXA'
+  TARGET_PATH="$target" MODE="$mode" PLUGIN_ID="$PLUGIN_ID" NEW_API_KEY="${NEW_API_KEY:-}" ENABLE_INSECURE_SERVER="$ALLOW_INSECURE_HTTP" osascript -l JavaScript <<'JXA'
 ObjC.import('Foundation');
 const path = $.getenv('TARGET_PATH');
 const mode = $.getenv('MODE');
 const pluginId = $.getenv('PLUGIN_ID');
 const newApiKey = $.getenv('NEW_API_KEY');
+const enableInsecureServer = $.getenv('ENABLE_INSECURE_SERVER') === '1';
 let data = {};
 const file = $.NSFileManager.defaultManager;
 if (file.fileExistsAtPath(path)) {
@@ -126,6 +127,7 @@ if (file.fileExistsAtPath(path)) {
 }
 if (mode === 'data') {
   if (!data.apiKey) data.apiKey = newApiKey;
+  if (enableInsecureServer) data.enableInsecureServer = true;
 } else if (mode === 'plugins') {
   if (!Array.isArray(data)) data = [];
   if (!data.includes(pluginId)) data.push(pluginId);
@@ -161,8 +163,8 @@ install_plugin() {
   fi
   if [[ -z "$api_key" ]]; then
     api_key="$(openssl rand -hex 32 2>/dev/null || uuidgen | tr -d '-')"
-    NEW_API_KEY="$api_key" write_json_with_jxa "$data_path" data
   fi
+  NEW_API_KEY="$api_key" write_json_with_jxa "$data_path" data
   API_KEY="$api_key"
 
   mkdir -p "$obsidian_dir"

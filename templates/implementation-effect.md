@@ -1,3 +1,16 @@
+---
+type: code-feature-summary
+project: <project-id>
+feature: <feature-id>
+status: analysis
+review: pending
+source: codex
+source_thread_id: unknown
+updated: YYYY-MM-DD
+tags:
+  - code
+---
+
 # 实施效果
 
 ## Before

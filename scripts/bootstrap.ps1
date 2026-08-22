@@ -136,7 +136,7 @@ function Normalize-NoteRoot([string]$Path) {
     return $normalized.Trim('/')
 }
 
-function Install-LocalRestApi([string]$Vault) {
+function Install-LocalRestApi([string]$Vault, [bool]$EnableInsecureServer) {
     $obsidianDir = Join-Path $Vault '.obsidian'
     $pluginDir = Join-Path $obsidianDir "plugins\$pluginId"
     New-Item -ItemType Directory -Path $pluginDir -Force | Out-Null
@@ -168,6 +168,7 @@ function Install-LocalRestApi([string]$Vault) {
         }
     }
 
+    $pluginDataChanged = $false
     $apiKey = [string]$pluginData.apiKey
     if ([string]::IsNullOrWhiteSpace($apiKey)) {
         $apiKey = New-ApiKey
@@ -177,6 +178,21 @@ function Install-LocalRestApi([string]$Vault) {
         else {
             $pluginData | Add-Member -MemberType NoteProperty -Name apiKey -Value $apiKey
         }
+        $pluginDataChanged = $true
+    }
+    if ($EnableInsecureServer) {
+        if ($pluginData.psobject.Properties.Name -contains 'enableInsecureServer') {
+            if (-not [bool]$pluginData.enableInsecureServer) {
+                $pluginData.enableInsecureServer = $true
+                $pluginDataChanged = $true
+            }
+        }
+        else {
+            $pluginData | Add-Member -MemberType NoteProperty -Name enableInsecureServer -Value $true
+            $pluginDataChanged = $true
+        }
+    }
+    if ($pluginDataChanged) {
         Write-Utf8Json $dataPath $pluginData
     }
 
@@ -301,12 +317,7 @@ tool_timeout_sec = 60
 }
 
 $resolvedVault = Resolve-Vault $VaultPath
-Confirm-Bootstrap
-$apiKey = Install-LocalRestApi $resolvedVault
 $noteRoot = Normalize-NoteRoot $NoteRoot
-$settingsPath = Join-Path $resolvedVault '.codex-obsidian-knowledge.json'
-Write-Utf8Json $settingsPath (@{ version = 1; noteRoot = $noteRoot })
-
 $protocol = 'https'
 $port = 27124
 if ($AllowInsecureHttp) {
@@ -314,6 +325,11 @@ if ($AllowInsecureHttp) {
     $port = 27123
 }
 $endpoint = "${protocol}://127.0.0.1:${port}/mcp/"
+
+Confirm-Bootstrap
+$apiKey = Install-LocalRestApi $resolvedVault $AllowInsecureHttp.IsPresent
+$settingsPath = Join-Path $resolvedVault '.codex-obsidian-knowledge.json'
+Write-Utf8Json $settingsPath (@{ version = 1; noteRoot = $noteRoot })
 
 Set-SecretEnvironment $apiKey
 Set-CodexMcp $endpoint

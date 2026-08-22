@@ -22,24 +22,21 @@ Skill 的任务边界写在 `skills/code-knowledge-capture/SKILL.md`；长格式
 
 ## Test locally
 
-使用 Python 运行 Skill 和插件校验器：
+使用当前 Codex Home 和 PATH 中的 Python 运行 Skill 和插件校验器：
 
 ```powershell
-$skillValidator = 'C:\Users\ASUS\.codex\skills\.system\skill-creator\scripts\quick_validate.py'
-$pluginValidator = 'C:\Users\ASUS\.codex\skills\.system\plugin-creator\scripts\validate_plugin.py'
-& 'C:\Python314\python.exe' $skillValidator '.\skills\code-knowledge-capture'
-& 'C:\Python314\python.exe' $pluginValidator '.'
+$codexRoot = if ($env:CODEX_HOME) { $env:CODEX_HOME } else { Join-Path $env:USERPROFILE '.codex' }
+$python = (Get-Command python -ErrorAction Stop).Source
+$skillValidator = Join-Path $codexRoot 'skills\.system\skill-creator\scripts\quick_validate.py'
+$pluginValidator = Join-Path $codexRoot 'skills\.system\plugin-creator\scripts\validate_plugin.py'
+& $python $skillValidator '.\skills\code-knowledge-capture'
+& $python $pluginValidator '.'
 ```
 
-解析 PowerShell 脚本而不执行真实写入：
+运行仓库校验和隔离的临时 Vault 回归测试（测试数据仅创建在 `tests/.tmp-*` 并在结束时清理）：
 
 ```powershell
-foreach ($path in @('.\scripts\install.ps1', '.\scripts\doctor.ps1')) {
-    $tokens = $null
-    $errors = $null
-    [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path $path), [ref]$tokens, [ref]$errors) | Out-Null
-    if ($errors.Count -gt 0) { throw "$path has PowerShell parse errors" }
-}
+.\tests\repository-validation.ps1
 ```
 
 macOS 初始化脚本应在 macOS 测试机上执行语法检查和临时 Vault 集成测试。测试覆盖固定的 Local REST API 版本下载、首次生成 API key、已有 `data.json` 的幂等更新、`community-plugins.json` / `app.json` 配置、Codex MCP 配置以及 HTTPS/HTTP endpoint 检查。不要把真实 Vault API key 用作测试 fixture。
