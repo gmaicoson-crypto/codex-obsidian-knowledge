@@ -41,6 +41,16 @@ P0/P1/P2 improvements with acceptance criteria, dependencies, risk, and whether 
 
 Source thread IDs, repository paths, reports, artifacts, commits, and related Obsidian notes. Redact credentials and personal data.
 
+## Code evidence contract
+
+Every code example should carry these fields:
+
+- `File`: source file path.
+- `Symbol/line`: function, class, configuration key, test name, or line location.
+- `Role`: what behavior the example proves or explains.
+- `Source`: a short fenced block copied from the repository.
+- `Why it matters`: the connection between the source and the captured knowledge.
+
 ## Project overview rule
 
 `00-项目总览.md` is a compact index, not a duplicate of every feature note. It should list the project purpose, architecture, feature status matrix, current risks, and links to feature directories.

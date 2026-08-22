@@ -26,6 +26,14 @@ tags:
 
 ## Key entry points
 
+`<path>:<symbol>` — <what this entry point does>
+
+```<language>
+<short representative source example>
+```
+
+If no source example is available, write `无可引用代码实例` and explain why.
+
 ## Evidence
 
 ## Open risks

@@ -60,6 +60,18 @@ Use these statuses:
 
 Read [summary-schema.md](references/summary-schema.md) when drafting the note structure and [review-policy.md](references/review-policy.md) when deciding whether an update needs confirmation or how to handle sensitive evidence.
 
+## Concrete code examples are required
+
+For implemented code, knowledge capture must include concrete source examples instead of only prose:
+
+- Include 1–3 short, representative snippets for the entry point, core logic, or validation/test path.
+- Each snippet must identify the file path, symbol or line location, programming language, and why the code matters to the observed behavior.
+- Quote the actual source with a fenced code block; do not silently replace source with pseudocode. Use `...` only to omit irrelevant surrounding lines.
+- Prefer a before/after comparison when the behavior changed, and distinguish production code from test code.
+- If the item is design-only, configuration-only, or depends entirely on external code, explicitly record `无可引用代码实例` and explain the evidence boundary.
+
+The preview for an implemented feature must show at least one code example or the explicit no-example explanation before any note is written.
+
 ## Obsidian write contract
 
 Use the connected Obsidian MCP server after approval. Prefer its structured vault read/write/patch/search tools; do not fall back to arbitrary local file writes when the MCP connection is unavailable. If the required MCP capability is missing, report the exact setup issue and do not claim that anything was written.
