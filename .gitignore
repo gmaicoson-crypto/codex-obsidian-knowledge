@@ -1,0 +1,13 @@
+# Local secrets and generated state
+.env
+.env.*
+*.local.json
+/.codex-obsidian-knowledge.json
+state/
+logs/
+
+# Editor and OS files
+.idea/
+.vscode/
+Thumbs.db
+Desktop.ini

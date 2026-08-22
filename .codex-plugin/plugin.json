@@ -1,0 +1,18 @@
+{
+  "name": "codex-obsidian-knowledge",
+  "version": "0.1.0",
+  "description": "Review-first knowledge capture for code discussions, with project and feature-level Markdown summaries in Obsidian.",
+  "author": {
+    "name": "Open source contributors"
+  },
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Codex Obsidian Knowledge",
+    "shortDescription": "Capture reviewed code knowledge in Obsidian.",
+    "longDescription": "Summarize code discussions and implementations into project and feature knowledge sets, with an explicit preview and confirmation before writing to Obsidian.",
+    "developerName": "Open source contributors",
+    "category": "Productivity",
+    "capabilities": [],
+    "defaultPrompt": "Use code-knowledge-capture to preview a structured summary of this code discussion before writing it to Obsidian."
+  }
+}
