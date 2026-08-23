@@ -19,18 +19,49 @@ JXA
 plugin_name="$(json_field "$repo_root/.codex-plugin/plugin.json" name)"
 marketplace_name="$(json_field "$repo_root/.agents/plugins/marketplace.json" name)"
 selector="$plugin_name@$marketplace_name"
-temporary_codex_home="$(mktemp -d "${TMPDIR:-/tmp}/codex-plugin-validation.XXXXXX")"
+temporary_root="${TMPDIR:-/tmp}"
+temporary_root="${temporary_root%/}"
+temporary_codex_home="$(mktemp -d "$temporary_root/codex-plugin-validation.XXXXXX")"
 previous_codex_home="${CODEX_HOME-}"
 cleanup() {
+  local status=$?
   if [[ -n "$previous_codex_home" ]]; then export CODEX_HOME="$previous_codex_home"; else unset CODEX_HOME || true; fi
-  [[ "$temporary_codex_home" == "${TMPDIR:-/tmp}/codex-plugin-validation."* ]] && rm -rf -- "$temporary_codex_home"
+  if [[ "$temporary_codex_home" == "$temporary_root/codex-plugin-validation."* ]]; then
+    rm -rf -- "$temporary_codex_home"
+  else
+    echo "Refusing to clean unexpected temporary Codex Home: $temporary_codex_home" >&2
+  fi
+  return "$status"
 }
 trap cleanup EXIT
 export CODEX_HOME="$temporary_codex_home"
 
-bash "$repo_root/scripts/install-plugin.sh" --approve >/dev/null
-codex plugin list | grep -Eq "^[[:space:]]*${selector}[[:space:]]+installed"
-bash "$repo_root/scripts/install-plugin.sh" --approve >/dev/null
-codex plugin remove "$selector" >/dev/null
-codex plugin marketplace remove "$marketplace_name" >/dev/null
+if ! bash "$repo_root/scripts/install-plugin.sh" --approve >/dev/null; then
+  echo 'Initial plugin installation failed in the isolated Codex Home.' >&2
+  exit 1
+fi
+if ! plugins="$(codex plugin list --marketplace "$marketplace_name" 2>&1)"; then
+  echo 'Could not list the installed test plugin.' >&2
+  printf '%s\n' "$plugins" >&2
+  exit 1
+fi
+if ! printf '%s\n' "$plugins" | awk -v selector="$selector" '$1 == selector && $2 ~ /^installed/ { found=1 } END { exit !found }'; then
+  echo "Codex CLI did not report the isolated plugin as installed: $selector" >&2
+  printf '%s\n' "$plugins" >&2
+  exit 1
+fi
+if ! bash "$repo_root/scripts/install-plugin.sh" --approve >/dev/null; then
+  echo 'Plugin installer was not idempotent in the isolated Codex Home.' >&2
+  exit 1
+fi
+if ! remove_output="$(codex plugin remove "$selector" 2>&1)"; then
+  echo "Codex CLI could not remove the isolated test plugin: $selector" >&2
+  printf '%s\n' "$remove_output" >&2
+  exit 1
+fi
+if ! remove_marketplace_output="$(codex plugin marketplace remove "$marketplace_name" 2>&1)"; then
+  echo "Codex CLI could not remove the isolated test marketplace: $marketplace_name" >&2
+  printf '%s\n' "$remove_marketplace_output" >&2
+  exit 1
+fi
 echo 'Codex CLI plugin package validation passed.'
