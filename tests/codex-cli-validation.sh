@@ -8,9 +8,11 @@ command -v osascript >/dev/null 2>&1 || { echo 'osascript is required for macOS 
 json_field() {
   JSON_PATH="$1" JSON_FIELD="$2" osascript -l JavaScript <<'JXA'
 ObjC.import('Foundation');
-const raw = ObjC.unwrap($.NSString.stringWithContentsOfFileEncodingError($.getenv('JSON_PATH'), $.NSUTF8StringEncoding, null));
+const jsonPath = ObjC.unwrap($.NSProcessInfo.processInfo.environment.objectForKey('JSON_PATH'));
+const raw = ObjC.unwrap($.NSString.stringWithContentsOfFileEncodingError(jsonPath, $.NSUTF8StringEncoding, null));
 const data = JSON.parse(raw.replace(/^\uFEFF/, ''));
-console.log(String(data[$.getenv('JSON_FIELD')]));
+const jsonField = ObjC.unwrap($.NSProcessInfo.processInfo.environment.objectForKey('JSON_FIELD'));
+console.log(String(data[jsonField]));
 JXA
 }
 

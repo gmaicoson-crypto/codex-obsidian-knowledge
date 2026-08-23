@@ -26,8 +26,8 @@ cleanup() { rm -f -- "$temporary"; }
 trap cleanup EXIT
 MANIFEST_PATH="$MANIFEST_PATH" CANONICAL_PATH="$temporary" osascript -l JavaScript <<'JXA'
 ObjC.import('Foundation');
-const source = $.getenv('MANIFEST_PATH');
-const target = $.getenv('CANONICAL_PATH');
+const source = ObjC.unwrap($.NSProcessInfo.processInfo.environment.objectForKey('MANIFEST_PATH'));
+const target = ObjC.unwrap($.NSProcessInfo.processInfo.environment.objectForKey('CANONICAL_PATH'));
 const raw = ObjC.unwrap($.NSString.stringWithContentsOfFileEncodingError(source, $.NSUTF8StringEncoding, null));
 const entropy = (text) => {
   const counts = {};

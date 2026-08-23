@@ -45,8 +45,8 @@ json_field() {
   local path="$1" field="$2"
   JSON_PATH="$path" JSON_FIELD="$field" osascript -l JavaScript <<'JXA'
 ObjC.import('Foundation');
-const path = $.getenv('JSON_PATH');
-const field = $.getenv('JSON_FIELD');
+const path = ObjC.unwrap($.NSProcessInfo.processInfo.environment.objectForKey('JSON_PATH'));
+const field = ObjC.unwrap($.NSProcessInfo.processInfo.environment.objectForKey('JSON_FIELD'));
   const raw = ObjC.unwrap($.NSString.stringWithContentsOfFileEncodingError(path, $.NSUTF8StringEncoding, null));
   const data = JSON.parse(raw.replace(/^\uFEFF/, ''));
 if (data[field] !== undefined && data[field] !== null) console.log(String(data[field]));

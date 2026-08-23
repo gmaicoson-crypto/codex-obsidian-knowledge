@@ -56,7 +56,7 @@ load_metadata() {
   local lines
   lines="$(METADATA_PATH="$METADATA_PATH" osascript -l JavaScript <<'JXA'
 ObjC.import('Foundation');
-const path = $.getenv('METADATA_PATH');
+const path = ObjC.unwrap($.NSProcessInfo.processInfo.environment.objectForKey('METADATA_PATH'));
 const raw = ObjC.unwrap($.NSString.stringWithContentsOfFileEncodingError(path, $.NSUTF8StringEncoding, null));
 const data = JSON.parse(raw.replace(/^\uFEFF/, ''));
 console.log(data.pluginId);
@@ -104,7 +104,7 @@ discover_vaults() {
   [[ -f "$config_path" ]] || return 0
   OBSIDIAN_CONFIG_PATH="$config_path" osascript -l JavaScript <<'JXA'
 ObjC.import('Foundation');
-const path = $.getenv('OBSIDIAN_CONFIG_PATH');
+const path = ObjC.unwrap($.NSProcessInfo.processInfo.environment.objectForKey('OBSIDIAN_CONFIG_PATH'));
 const raw = ObjC.unwrap($.NSString.stringWithContentsOfFileEncodingError(path, $.NSUTF8StringEncoding, null));
 const data = JSON.parse(raw.replace(/^\uFEFF/, ''));
 for (const entry of Object.values(data.vaults || {})) if (entry.path) console.log((entry.open ? '1' : '0') + '\t' + entry.path);
@@ -144,8 +144,8 @@ json_field() {
   local path="$1" field="$2"
   JSON_PATH="$path" JSON_FIELD="$field" osascript -l JavaScript <<'JXA'
 ObjC.import('Foundation');
-const path = $.getenv('JSON_PATH');
-const field = $.getenv('JSON_FIELD');
+const path = ObjC.unwrap($.NSProcessInfo.processInfo.environment.objectForKey('JSON_PATH'));
+const field = ObjC.unwrap($.NSProcessInfo.processInfo.environment.objectForKey('JSON_FIELD'));
 const raw = ObjC.unwrap($.NSString.stringWithContentsOfFileEncodingError(path, $.NSUTF8StringEncoding, null));
 const data = JSON.parse(raw.replace(/^\uFEFF/, ''));
 if (data[field] !== undefined && data[field] !== null) console.log(String(data[field]));
@@ -156,12 +156,12 @@ write_json_with_jxa() {
   local target="$1" mode="$2"
   TARGET_PATH="$target" MODE="$mode" PLUGIN_ID="$PLUGIN_ID" NEW_API_KEY="${NEW_API_KEY:-}" NOTE_ROOT="$NOTE_ROOT" ENABLE_INSECURE_SERVER="$ALLOW_INSECURE_HTTP" osascript -l JavaScript <<'JXA'
 ObjC.import('Foundation');
-const path = $.getenv('TARGET_PATH');
-const mode = $.getenv('MODE');
-const pluginId = $.getenv('PLUGIN_ID');
-const newApiKey = $.getenv('NEW_API_KEY');
-const noteRoot = $.getenv('NOTE_ROOT');
-const enableInsecureServer = $.getenv('ENABLE_INSECURE_SERVER') === '1';
+const path = ObjC.unwrap($.NSProcessInfo.processInfo.environment.objectForKey('TARGET_PATH'));
+const mode = ObjC.unwrap($.NSProcessInfo.processInfo.environment.objectForKey('MODE'));
+const pluginId = ObjC.unwrap($.NSProcessInfo.processInfo.environment.objectForKey('PLUGIN_ID'));
+const newApiKey = ObjC.unwrap($.NSProcessInfo.processInfo.environment.objectForKey('NEW_API_KEY'));
+const noteRoot = ObjC.unwrap($.NSProcessInfo.processInfo.environment.objectForKey('NOTE_ROOT'));
+const enableInsecureServer = ObjC.unwrap($.NSProcessInfo.processInfo.environment.objectForKey('ENABLE_INSECURE_SERVER')) === '1';
 const file = $.NSFileManager.defaultManager;
 const exists = file.fileExistsAtPath(path);
 let data = {};
@@ -193,10 +193,10 @@ JXA
 validate_manifest() {
   MANIFEST_PATH="$1" EXPECTED_ID="$PLUGIN_ID" EXPECTED_VERSION="$LOCAL_REST_API_VERSION" osascript -l JavaScript <<'JXA'
 ObjC.import('Foundation');
-const path = $.getenv('MANIFEST_PATH');
+const path = ObjC.unwrap($.NSProcessInfo.processInfo.environment.objectForKey('MANIFEST_PATH'));
 const raw = ObjC.unwrap($.NSString.stringWithContentsOfFileEncodingError(path, $.NSUTF8StringEncoding, null));
 const data = JSON.parse(raw.replace(/^\uFEFF/, ''));
-if (data.id !== $.getenv('EXPECTED_ID') || data.version !== $.getenv('EXPECTED_VERSION')) throw new Error('manifest does not match pinned plugin');
+if (data.id !== ObjC.unwrap($.NSProcessInfo.processInfo.environment.objectForKey('EXPECTED_ID')) || data.version !== ObjC.unwrap($.NSProcessInfo.processInfo.environment.objectForKey('EXPECTED_VERSION'))) throw new Error('manifest does not match pinned plugin');
 JXA
 }
 

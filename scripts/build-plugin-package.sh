@@ -9,7 +9,8 @@ clean=0
 command -v osascript >/dev/null 2>&1 || { echo 'osascript is required to parse the plugin manifest.' >&2; exit 1; }
 plugin_name="$(MANIFEST_PATH="$repo_root/.codex-plugin/plugin.json" osascript -l JavaScript <<'JXA'
 ObjC.import('Foundation');
-const raw = ObjC.unwrap($.NSString.stringWithContentsOfFileEncodingError($.getenv('MANIFEST_PATH'), $.NSUTF8StringEncoding, null));
+const manifestPath = ObjC.unwrap($.NSProcessInfo.processInfo.environment.objectForKey('MANIFEST_PATH'));
+const raw = ObjC.unwrap($.NSString.stringWithContentsOfFileEncodingError(manifestPath, $.NSUTF8StringEncoding, null));
 console.log(String(JSON.parse(raw.replace(/^\uFEFF/, '')).name));
 JXA
 )"

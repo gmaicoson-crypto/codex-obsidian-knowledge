@@ -34,7 +34,7 @@ load_metadata() {
   local lines
   if ! lines="$(METADATA_PATH="$METADATA_PATH" osascript -l JavaScript <<'JXA'
 ObjC.import('Foundation');
-const path = $.getenv('METADATA_PATH');
+const path = ObjC.unwrap($.NSProcessInfo.processInfo.environment.objectForKey('METADATA_PATH'));
   const raw = ObjC.unwrap($.NSString.stringWithContentsOfFileEncodingError(path, $.NSUTF8StringEncoding, null));
   const data = JSON.parse(raw.replace(/^\uFEFF/, ''));
 console.log(data.pluginId); console.log(data.version);
@@ -49,8 +49,8 @@ json_field() {
   local path="$1" field="$2"
   JSON_PATH="$path" JSON_FIELD="$field" osascript -l JavaScript <<'JXA'
 ObjC.import('Foundation');
-const path = $.getenv('JSON_PATH');
-const field = $.getenv('JSON_FIELD');
+const path = ObjC.unwrap($.NSProcessInfo.processInfo.environment.objectForKey('JSON_PATH'));
+const field = ObjC.unwrap($.NSProcessInfo.processInfo.environment.objectForKey('JSON_FIELD'));
   const raw = ObjC.unwrap($.NSString.stringWithContentsOfFileEncodingError(path, $.NSUTF8StringEncoding, null));
   const data = JSON.parse(raw.replace(/^\uFEFF/, ''));
 if (data[field] !== undefined && data[field] !== null) console.log(String(data[field]));
@@ -61,8 +61,8 @@ json_array_contains() {
   local path="$1" value="$2"
   JSON_PATH="$path" JSON_VALUE="$value" osascript -l JavaScript <<'JXA'
 ObjC.import('Foundation');
-const path = $.getenv('JSON_PATH');
-const value = $.getenv('JSON_VALUE');
+const path = ObjC.unwrap($.NSProcessInfo.processInfo.environment.objectForKey('JSON_PATH'));
+const value = ObjC.unwrap($.NSProcessInfo.processInfo.environment.objectForKey('JSON_VALUE'));
   const raw = ObjC.unwrap($.NSString.stringWithContentsOfFileEncodingError(path, $.NSUTF8StringEncoding, null));
   const data = JSON.parse(raw.replace(/^\uFEFF/, ''));
 if (!Array.isArray(data) || !data.includes(value)) throw new Error('array value missing');
@@ -181,11 +181,11 @@ if [[ "$REPAIR" -eq 1 ]]; then
   repair_data="$(mktemp "${TMPDIR:-/tmp}/codex-obsidian-doctor-data.XXXXXX")"
   REPAIR_SOURCE="$data_path" REPAIR_TARGET="$repair_data" REPAIR_INSECURE="$repair_insecure" osascript -l JavaScript <<'JXA'
 ObjC.import('Foundation');
-const source = $.getenv('REPAIR_SOURCE');
-const target = $.getenv('REPAIR_TARGET');
+const source = ObjC.unwrap($.NSProcessInfo.processInfo.environment.objectForKey('REPAIR_SOURCE'));
+const target = ObjC.unwrap($.NSProcessInfo.processInfo.environment.objectForKey('REPAIR_TARGET'));
 const raw = ObjC.unwrap($.NSString.stringWithContentsOfFileEncodingError(source, $.NSUTF8StringEncoding, null));
 const data = JSON.parse(raw.replace(/^\uFEFF/, ''));
-data.enableInsecureServer = $.getenv('REPAIR_INSECURE') === '1';
+data.enableInsecureServer = ObjC.unwrap($.NSProcessInfo.processInfo.environment.objectForKey('REPAIR_INSECURE')) === '1';
 const text = JSON.stringify(data, null, 2) + '\n';
 if (!$.NSString.stringWithString(text).writeToFileAtomicallyEncodingError(target, true, $.NSUTF8StringEncoding, null)) throw new Error('Could not stage data.json');
 JXA
@@ -245,7 +245,7 @@ fi
 mcp_json_response_name() {
   MCP_RESPONSE="$1" osascript -l JavaScript <<'JXA'
 ObjC.import('Foundation');
-const raw = $.getenv('MCP_RESPONSE');
+const raw = ObjC.unwrap($.NSProcessInfo.processInfo.environment.objectForKey('MCP_RESPONSE'));
   const line = raw.split(/\r?\n/).find((value) => value.trim().startsWith('data:'));
   const candidate = line ? line.replace(/^\s*data:\s*/, '') : raw.trim();
 const data = JSON.parse(candidate);

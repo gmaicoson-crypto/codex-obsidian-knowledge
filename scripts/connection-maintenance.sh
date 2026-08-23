@@ -33,7 +33,7 @@ done
 
 PLUGIN_ID="$(METADATA_PATH="$SCRIPT_DIR/upstream-assets.json" osascript -l JavaScript <<'JXA'
 ObjC.import('Foundation');
-const path = $.getenv('METADATA_PATH');
+const path = ObjC.unwrap($.NSProcessInfo.processInfo.environment.objectForKey('METADATA_PATH'));
 const raw = ObjC.unwrap($.NSString.stringWithContentsOfFileEncodingError(path, $.NSUTF8StringEncoding, null));
 console.log(String(JSON.parse(raw.replace(/^\uFEFF/, '')).pluginId));
 JXA
@@ -68,8 +68,8 @@ trap rollback EXIT
 json_field() {
   JSON_PATH="$1" JSON_FIELD="$2" osascript -l JavaScript <<'JXA'
 ObjC.import('Foundation');
-const path = $.getenv('JSON_PATH');
-const field = $.getenv('JSON_FIELD');
+const path = ObjC.unwrap($.NSProcessInfo.processInfo.environment.objectForKey('JSON_PATH'));
+const field = ObjC.unwrap($.NSProcessInfo.processInfo.environment.objectForKey('JSON_FIELD'));
 const raw = ObjC.unwrap($.NSString.stringWithContentsOfFileEncodingError(path, $.NSUTF8StringEncoding, null));
 const data = JSON.parse(raw.replace(/^\uFEFF/, ''));
 if (data[field] !== undefined && data[field] !== null) console.log(String(data[field]));
@@ -80,14 +80,14 @@ stage_data() {
   local source="$1" target="$2" key="$3" insecure="$4"
   DATA_SOURCE="$source" DATA_TARGET="$target" NEW_KEY="$key" INSECURE="$insecure" osascript -l JavaScript <<'JXA'
 ObjC.import('Foundation');
-const source = $.getenv('DATA_SOURCE');
-const target = $.getenv('DATA_TARGET');
+const source = ObjC.unwrap($.NSProcessInfo.processInfo.environment.objectForKey('DATA_SOURCE'));
+const target = ObjC.unwrap($.NSProcessInfo.processInfo.environment.objectForKey('DATA_TARGET'));
 const raw = ObjC.unwrap($.NSString.stringWithContentsOfFileEncodingError(source, $.NSUTF8StringEncoding, null));
 const data = JSON.parse(raw.replace(/^\uFEFF/, ''));
 if (typeof data !== 'object' || data === null || Array.isArray(data)) throw new Error('data.json must contain an object');
-const key = $.getenv('NEW_KEY');
+const key = ObjC.unwrap($.NSProcessInfo.processInfo.environment.objectForKey('NEW_KEY'));
 if (key) data.apiKey = key;
-data.enableInsecureServer = $.getenv('INSECURE') === '1';
+data.enableInsecureServer = ObjC.unwrap($.NSProcessInfo.processInfo.environment.objectForKey('INSECURE')) === '1';
 const text = JSON.stringify(data, null, 2) + '\n';
 if (!$.NSString.stringWithString(text).writeToFileAtomicallyEncodingError(target, true, $.NSUTF8StringEncoding, null)) throw new Error('Could not stage data.json');
 JXA
@@ -97,12 +97,13 @@ stage_community_without_plugin() {
   local source="$1" target="$2"
   COMMUNITY_SOURCE="$source" COMMUNITY_TARGET="$target" PLUGIN_ID="$PLUGIN_ID" osascript -l JavaScript <<'JXA'
 ObjC.import('Foundation');
-const source = $.getenv('COMMUNITY_SOURCE');
-const target = $.getenv('COMMUNITY_TARGET');
+const source = ObjC.unwrap($.NSProcessInfo.processInfo.environment.objectForKey('COMMUNITY_SOURCE'));
+const target = ObjC.unwrap($.NSProcessInfo.processInfo.environment.objectForKey('COMMUNITY_TARGET'));
 const raw = ObjC.unwrap($.NSString.stringWithContentsOfFileEncodingError(source, $.NSUTF8StringEncoding, null));
 const data = JSON.parse(raw.replace(/^\uFEFF/, ''));
 if (!Array.isArray(data)) throw new Error('community-plugins.json must contain an array');
-const filtered = data.filter((value) => String(value) !== $.getenv('PLUGIN_ID'));
+const pluginId = ObjC.unwrap($.NSProcessInfo.processInfo.environment.objectForKey('PLUGIN_ID'));
+const filtered = data.filter((value) => String(value) !== pluginId);
 const text = JSON.stringify(filtered, null, 2) + '\n';
 if (!$.NSString.stringWithString(text).writeToFileAtomicallyEncodingError(target, true, $.NSUTF8StringEncoding, null)) throw new Error('Could not stage community-plugins.json');
 JXA

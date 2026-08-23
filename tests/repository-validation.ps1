@@ -137,6 +137,12 @@ $bootstrapShell = Get-Content -LiteralPath (Join-Path $repoRoot 'scripts\bootstr
 Assert-True ($bootstrapShell -match 'data\.enableInsecureServer = enableInsecureServer') 'bootstrap.sh must reconcile the plugin HTTP server in both directions.'
 Assert-True ($bootstrapShell -match '\[\[ "\$NOTE_ROOT" != /\* \]\]') 'bootstrap.sh must reject absolute NoteRoot values before trimming them.'
 
+$unsupportedJxaGetenv = '$.' + 'getenv('
+foreach ($shellPath in @(Get-ChildItem -LiteralPath (Join-Path $repoRoot 'scripts') -Filter '*.sh' -File) + @(Get-ChildItem -LiteralPath (Join-Path $repoRoot 'tests') -Filter '*.sh' -File)) {
+    $shellSource = Get-Content -LiteralPath $shellPath.FullName -Raw -Encoding UTF8
+    Assert-True (-not $shellSource.Contains($unsupportedJxaGetenv)) "$($shellPath.Name) must use NSProcessInfo.environment instead of the unavailable JXA getenv helper."
+}
+
 $installShell = Get-Content -LiteralPath (Join-Path $repoRoot 'scripts\install-plugin.sh') -Raw -Encoding UTF8
 Assert-True ($installShell.Contains('user_codex_root="${CODEX_HOME:-$HOME/.codex}"')) 'install-plugin.sh must treat CODEX_HOME as the Codex root.'
 
