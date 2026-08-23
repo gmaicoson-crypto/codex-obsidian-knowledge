@@ -1,4 +1,4 @@
 interface:
   display_name: "Code Knowledge Capture"
-  short_description: "Preview and capture project feature knowledge in Obsidian."
-  default_prompt: "Use code-knowledge-capture to preview a structured summary of this code discussion before writing it to Obsidian."
+  short_description: "Turn Codex-written code into beginner-friendly learning notes."
+  default_prompt: "Use $code-knowledge-capture to preview a beginner-friendly learning summary of this code discussion before writing it to Obsidian."

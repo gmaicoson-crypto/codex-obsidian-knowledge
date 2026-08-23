@@ -7,18 +7,27 @@ review: pending
 source: codex
 source_thread_id: unknown
 updated: YYYY-MM-DD
+audience: beginner-programmer
+detail_level: expanded
 tags:
   - code
 ---
 
 # 相关对话与文件
 
-## Conversations
+## 证据台账
 
-## Source files
+| 结论 | 来源类型 | 位置 | 它证明什么 | 它不能证明什么 | 可信度 | 已处理敏感信息 |
+|---|---|---|---|---|---|---|
 
-## Tests and reports
+## 对话与决策
 
-## Artifacts
+## 源代码与配置
 
-## Related notes
+## 测试、命令与报告
+
+## 构建或运行产物
+
+## 相关笔记
+
+每个来源都说明“证明什么”和“不能证明什么”，不要把本页写成无注释的文件名列表。

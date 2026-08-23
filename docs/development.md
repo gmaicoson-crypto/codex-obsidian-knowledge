@@ -8,7 +8,9 @@ Skill 的任务边界写在 `skills/code-knowledge-capture/SKILL.md`；长格式
 
 ## Change the note schema
 
-先更新 `skills/code-knowledge-capture/references/summary-schema.md`，再同步更新 `templates/`、`README.md` 和 `docs/architecture.md` 中的结构示例。新字段应说明用途、是否必填以及兼容旧笔记的行为。`NoteRoot`、project ID 和 feature ID 必须遵守 `path-policy.md`；写入前必须遵守 `redaction-policy.md`。
+先更新 `skills/code-knowledge-capture/references/summary-schema.md`，再同步更新 `templates/`、`README.md`、`docs/workflow.md` 和 `docs/architecture.md` 中的结构示例。新字段应说明用途、是否必填以及兼容旧笔记的行为；当前 `audience: beginner-programmer` 和 `detail_level: expanded` 是默认值，旧笔记缺少这些字段时仍可读取和增量更新。`NoteRoot`、project ID 和 feature ID 必须遵守 `path-policy.md`；写入前必须遵守 `redaction-policy.md`。
+
+面向初学者的解释规则集中在 `references/beginner-learning-guide.md`。模板应保持以下教学不变量：先给通俗心智模型再给技术证据；术语关联真实代码位置；实现导读说明输入、处理、输出和失败信号；练习给出预期观察并保持只读或可安全回退。不要把模板扩展成通用编程教材。
 
 ## Change the capture behavior
 
@@ -18,6 +20,8 @@ Skill 的任务边界写在 `skills/code-knowledge-capture/SKILL.md`；长格式
 - 先预览，后确认，确认前只读。
 - 不删除笔记、不覆盖无关段落、不修改源代码仓库。
 - 事实、推断、验证证据和未来计划分开记录。
+- 初学者解释不牺牲技术准确性，并始终关联项目证据。
+- 自测与练习验证理解，不要求接触生产数据、凭据或破坏性操作。
 - 写入后回读验证。
 
 ## Test locally

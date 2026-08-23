@@ -1,5 +1,21 @@
 # Changelog
 
+## Unreleased
+
+- Refocused the plugin on beginning programmers who use Codex to write code,
+  with learning goals, prerequisites, plain-language mental models, and
+  project-grounded terminology.
+- Added three-level architecture explanations, guided input-to-output code
+  walkthroughs, syntax and failure-signal annotations, debugging paths,
+  explain-back questions, and safe exercises with expected observations.
+- Added `audience: beginner-programmer` metadata while preserving compatibility
+  with existing notes that do not yet contain the field.
+- Expanded the default knowledge-capture mode with evidence maps, end-to-end
+  flows, decision trade-offs, verification boundaries, reusable lessons, and
+  acceptance criteria for follow-up work.
+- Added `detail_level: expanded` to the note templates while keeping older
+  notes compatible with incremental updates.
+
 ## 0.2.0 - 2026-08-22
 
 - Added pinned SHA-256 verification for the upstream Local REST API assets.

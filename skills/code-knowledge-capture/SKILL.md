@@ -1,13 +1,15 @@
 ---
 name: code-knowledge-capture
-description: Summarize a code discussion or implementation into a reviewable project-and-feature knowledge set in Obsidian. Use when the user explicitly asks to summarize, distill, archive, or write coding knowledge after review; do not use for ordinary code changes.
+description: Turn a code discussion or Codex implementation into a reviewable, beginner-friendly project-and-feature learning set in Obsidian. Use when the user explicitly asks to capture, distill, archive, or write coding work as learning notes; do not use for ordinary code changes or one-off code explanations.
 metadata:
-  short-description: Preview and capture code knowledge in Obsidian
+  short-description: Learn from Codex-written code in Obsidian
 ---
 
 # Code Knowledge Capture
 
-Turn a completed or discussed coding task into durable, source-linked knowledge in Obsidian. This skill is project-agnostic: infer the project and feature from the current repository and conversation, and never hard-code a project name or local vault path.
+Turn a completed or discussed coding task into durable, source-linked learning material in Obsidian. The primary reader is a beginning programmer who uses Codex to build software and wants to understand the resulting code instead of merely storing a change log. The notes must help that reader answer: what is this, why is it needed, how does it work, where is it implemented, how was it verified, and how can I recognize or reuse the idea later?
+
+This skill is project-agnostic: infer the project and feature from the current repository and conversation, and never hard-code a project name or local vault path.
 
 Before choosing note paths, look for the integration settings file `.codex-obsidian-knowledge.json` at the Vault root through the connected Obsidian MCP. If it exists, use its `noteRoot` value as a relative path prefix. If it is absent or empty, use the Vault root. Never treat an absolute path or a `..` segment as a valid note root.
 
@@ -64,7 +66,52 @@ Use these statuses:
 - `verified`: implementation plus relevant verification evidence
 - `blocked`: progress stopped by a named blocker
 
-Read [summary-schema.md](references/summary-schema.md) when drafting the note structure and [review-policy.md](references/review-policy.md) when deciding whether an update needs confirmation or how to handle sensitive evidence.
+Read [summary-schema.md](references/summary-schema.md) when drafting the note structure, [beginner-learning-guide.md](references/beginner-learning-guide.md) when creating explanations and learning checks, and [review-policy.md](references/review-policy.md) when deciding whether an update needs confirmation or how to handle sensitive evidence.
+
+## Beginner-first expanded capture mode
+
+The default metadata is `audience: beginner-programmer` and
+`detail_level: expanded`. “Beginner-first” does not mean removing technical
+accuracy. Explain each important idea in two layers: a plain-language mental
+model first, then the exact code, symbol, data flow, or test evidence. Define a
+term at first use, explain unfamiliar syntax that matters to the behavior, and
+connect every code excerpt to its input, processing, output, and role in the
+larger flow.
+
+Do not pad notes with generic prose or turn them into a line-by-line dump. Teach
+only concepts supported by the task evidence and needed to understand this
+project. When evidence is missing, write `未验证`, `无证据`, or `[待确认]` and
+identify the missing check.
+
+Before drafting, build an evidence map with these buckets:
+
+| Bucket | Required questions |
+|---|---|
+| Context | What symptom or goal triggered the work? What is in and out of scope? |
+| Behavior | What happened before, what happens now, and what invariant must hold? |
+| Structure | Which entry point, call chain, data flow, state transition, and boundary explain it? |
+| Decisions | Which alternatives were considered, and what trade-off selected the approach? |
+| Implementation | Which files, symbols, configuration keys, and tests prove the change? |
+| Verification | Which checks passed, what scenario was exercised, and what remains unverified? |
+| Reuse | What rule, failure mode, debugging method, or anti-pattern transfers elsewhere? |
+| Follow-up | What should happen next, with priority, acceptance criteria, and dependencies? |
+
+Also build a learning map:
+
+| Learning bucket | Required questions |
+|---|---|
+| Prerequisites | What should the reader know first, and what can be learned inline? |
+| Vocabulary | Which key terms or syntax appear, what do they mean plainly, and where do they appear in this project? |
+| Mental model | What small model lets the reader predict the feature before reading details? |
+| Guided walkthrough | How does one concrete input travel from entry point to output, including an error path? |
+| Debugging | What should the reader observe first, and how can they narrow a failure safely? |
+| Self-check | What explain-back questions and small, safe exercises demonstrate understanding? |
+
+Use `[事实]`, `[推断]`, `[计划]`, and `[待确认]` when a reader could confuse
+evidence with interpretation or future work. The preview must expose the
+evidence map, reader prerequisites, key terms, at least one end-to-end flow,
+the main decision/trade-off, the verification boundary, and the proposed
+self-checks before any write.
 
 ## Concrete code examples are required
 
@@ -77,6 +124,13 @@ For implemented code, knowledge capture must include concrete source examples in
 - If the item is design-only, configuration-only, or depends entirely on external code, explicitly record `无可引用代码实例` and explain the evidence boundary.
 
 The preview for an implemented feature must show at least one code example or the explicit no-example explanation before any note is written.
+
+For an expanded implementation note, prefer 1–3 snippets that cover different
+roles: entry point, core transformation or state change, and validation/test.
+Do not repeat the same snippet in every note; link back to the implementation
+note when the source is unchanged. If a snippet cannot be safely quoted, record
+the file and symbol plus `无可引用代码实例`, explain the evidence boundary, and
+keep secrets redacted.
 
 ## Obsidian write contract
 

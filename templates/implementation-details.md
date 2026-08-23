@@ -7,54 +7,102 @@ review: pending
 source: codex
 source_thread_id: unknown
 updated: YYYY-MM-DD
+audience: beginner-programmer
+detail_level: expanded
 tags:
   - code
 ---
 
 # 实现细节
 
-## Problem context
+## 阅读导航
 
-## Previous behavior
+- **准备回答的问题：** <读完本页应该能解释什么>
+- **先读：** <前置术语或链接>
+- **代码起点：** `<path>:<symbol>`
+- **最终结果：** <输出、状态变化或副作用>
 
-## Call chain and data model
+## 问题背景
 
-## Change plan
+### 通俗理解
 
-## Changed files
+### 症状、影响、目标与边界
 
-## Edge cases and compatibility
+## 改动前的行为
 
-## Key code examples
+## 端到端代码导读
 
-Every core change or entry point must include at least one actual source example. Keep each example short and retain enough context to understand the behavior.
+### 先看全局
 
-### Example: <what this code proves>
+`<一个具体输入>` → `<入口>` → `<核心处理>` → `<存储/输出>` → `<使用者看到的结果>`
 
-- File: `<path>`
-- Symbol/line: `<function, class, test, or line>`
-- Role: `<how this code relates to the behavior>`
+### 分步跟读
+
+| 步骤 | 文件与符号 | 输入从哪里来 | 做了什么 | 输出到哪里 | 失败时能看到什么 |
+|---|---|---|---|---|---|
+
+用一个真实或测试中的具体输入贯穿所有步骤；未知处标注 `未验证`。
+
+### 调用链、数据流与控制流
+
+### 状态变化与不变量
+
+| 状态/规则 | 变化前 | 触发条件 | 变化后 | 由哪里保证 |
+|---|---|---|---|---|
+
+## 为什么这样实现
+
+### 采用方案
+
+### 替代方案与权衡
+
+| 方案 | 优点 | 代价/风险 | 为什么采用或放弃 | 证据类型 |
+|---|---|---|---|---|
+
+## 变更文件地图
+
+| 文件 | 符号/配置项 | 改了什么 | 为什么改 | 在主流程中的位置 |
+|---|---|---|---|---|
+
+## 关键代码实例
+
+优先选择入口、核心转换/状态变化、验证测试三种不同角色的 1–3 段真实源码。
+
+### 实例：<这段代码证明什么>
+
+- **文件：** `<path>`
+- **符号/行：** `<函数、类、测试、配置项或行号>`
+- **角色：** `<入口/核心逻辑/状态变化/验证>`
 
 ```<language>
-<copy the relevant source here; use ... for omitted surrounding lines>
+<复制相关源码；用 ... 标出省略的上下文>
 ```
 
-- Why it matters: <connect the code to the captured knowledge>
+- **输入：** <值或事件是什么，来自哪里>
+- **处理：** <关键语句按逻辑块解释，不逐行翻译>
+- **输出或副作用：** <返回值、状态、文件、请求等，以及下一个使用者>
+- **关键语法/API：** <只解释影响行为且初学者可能陌生的部分>
+- **为什么重要：** <它如何连接到功能结论>
+- **失败信号：** <日志、异常、返回值、测试失败或其他可观察现象>
 
-### Before/after comparison (optional)
+### 改动前后对比（行为变化时使用）
 
-- Before: `<path>` / `<symbol>`
+- 改动前：`<path>:<symbol>`
+- 改动后：`<path>:<symbol>`
+- 最小差异为何改变行为：
 
-```<language>
-<old source, if behavior changed>
-```
+没有可引用源码时写 `无可引用代码实例`，并说明是设计、配置还是外部行为证据。
 
-- After: `<path>` / `<symbol>`
+## 边界情况、兼容性与恢复
 
-```<language>
-<new source, if behavior changed>
-```
+## 出问题时从哪里查
 
-If no source example is available, write `无可引用代码实例` and explain whether this is design-only, configuration-only, or external behavior.
+1. **先观察：** <最接近用户症状的证据>
+2. **再定位：** <如何缩小到组件/符号>
+3. **验证假设：** <最小安全检查或测试>
+4. **确认修复：** <什么证据足以支持结论>
+5. **停止条件：** <何时应记录未验证而不是继续猜测>
 
-## Implementation notes
+## 实现事实、推断与计划
+
+明确分开 `[事实]`、`[推断]`、`[计划]` 和 `[待确认]`。

@@ -31,6 +31,11 @@ function Test-UnreviewedHighEntropyToken([string]$Line) {
     foreach ($match in [regex]::Matches($Line, '(?<![A-Za-z0-9+/=_-])[A-Za-z0-9+/=_-]{32,}(?![A-Za-z0-9+/=_-])')) {
         $candidate = $match.Value
         if ($candidate -match '^(?i:REDACTED|YOUR[_-]|EXAMPLE[_-]|PLACEHOLDER[_-])') { continue }
+        $followingText = $Line.Substring($match.Index + $match.Length)
+        $looksLikeRelativeFilePath =
+            $candidate -match '^(?:[A-Za-z0-9_-]+/)+[A-Za-z0-9_-]+$' -and
+            $followingText -match '^\.[A-Za-z0-9]{1,10}(?:\b|$)'
+        if ($looksLikeRelativeFilePath) { continue }
         if ((Get-ShannonEntropy $candidate) -ge 4.2) { return $true }
     }
     return $false
@@ -50,7 +55,7 @@ function Get-ScanFiles([string]$InputPath) {
 
 $findings = @()
 foreach ($file in ($Path | ForEach-Object { Get-ScanFiles $_ })) {
-    $lines = Get-Content -LiteralPath $file.FullName -Encoding UTF8
+    $lines = @(Get-Content -LiteralPath $file.FullName -Encoding UTF8)
     for ($lineNumber = 0; $lineNumber -lt $lines.Count; $lineNumber++) {
         $line = [string]$lines[$lineNumber]
         foreach ($rule in $rules) {
@@ -70,3 +75,4 @@ if ($findings.Count -gt 0) {
     exit 1
 }
 Write-Output 'Sensitive-content scan passed.'
+exit 0
