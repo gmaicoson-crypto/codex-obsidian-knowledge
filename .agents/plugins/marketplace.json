@@ -8,7 +8,7 @@
       "name": "codex-obsidian-knowledge",
       "source": {
         "source": "local",
-        "path": "./"
+        "path": "./plugins/codex-obsidian-knowledge"
       },
       "policy": {
         "installation": "AVAILABLE",

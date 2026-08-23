@@ -1,4 +1,7 @@
 interface:
   display_name: "Code Knowledge Capture"
   short_description: "Turn Codex-written code into beginner-friendly learning notes."
-  default_prompt: "Use $code-knowledge-capture to preview a beginner-friendly learning summary of this code discussion before writing it to Obsidian."
+  icon_small: "./assets/icon.svg"
+  icon_large: "./assets/logo.svg"
+  brand_color: "#6C63FF"
+  default_prompt: "Use $code-knowledge-capture to preview this coding work in compact or expanded learning-note mode before writing to Obsidian."

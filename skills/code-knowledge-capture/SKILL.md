@@ -15,6 +15,12 @@ Before choosing note paths, look for the integration settings file `.codex-obsid
 
 Read [path-policy.md](references/path-policy.md) and [redaction-policy.md](references/redaction-policy.md) before drafting targets or content. Project IDs, feature IDs, note paths, and sensitive-content handling must follow those references.
 
+Use `expanded` capture by default. If the user requests `compact`,
+`architecture-only`, or `update-only`, or if you recommend compact capture for
+a small task, read [capture-modes.md](references/capture-modes.md). Always show
+the selected mode and omitted notes in the preview; never silently reduce the
+capture set.
+
 ## First-run connection
 
 If the Obsidian MCP server is unavailable and this repository is present as the user's project, use the repository's cross-platform bootstrap flow before attempting any note read or write:
@@ -37,7 +43,7 @@ Default scope is the current conversation and current project. If the project or
 The workflow is review-first:
 
 1. Collect evidence and draft a preview without modifying files.
-2. Show the project, feature, status, target paths, facts, uncertainties, and proposed updates.
+2. Show the project, feature, status, capture mode, target paths, identity fields, facts, uncertainties, omissions, and proposed updates.
 3. Write only after the user says “确认写入” or gives an equivalent explicit approval.
 4. If the user requests a change, regenerate the preview; do not silently write.
 
@@ -52,7 +58,7 @@ Before the preview, use read-only inspection where available:
 - `git diff`, test commands and results, build reports, artifacts, and deployment evidence.
 - Existing project/feature notes in Obsidian for merge and duplicate detection.
 
-Do not modify source code, run destructive commands, or expose secrets during capture. Treat a design or plan as design; treat code as implemented only when a file change is evidenced; treat it as verified only when the relevant test or build evidence exists.
+Do not modify source code, run destructive commands, or expose secrets during capture. Treat a design or plan as design; treat code as implemented only when a file change is evidenced. Use `verified` only when the evidence covers the claimed runtime or user scenario; passing tests or a build without that scenario remains `implemented` with an explicit verification boundary, as defined in [review-policy.md](references/review-policy.md).
 
 Immediately before an approved write, validate the complete target path and scan the candidate Markdown for sensitive content. When a local candidate file can be materialized, use `scripts/scan-sensitive-content.ps1`; otherwise perform the same rule-based scan and report that the MCP write was not locally scanner-verified. A detected credential blocks the write until the preview is redacted.
 
@@ -63,14 +69,26 @@ Use these statuses:
 - `analysis`: investigation only
 - `design`: proposed solution only
 - `implemented`: code or configuration changed
-- `verified`: implementation plus relevant verification evidence
+- `verified`: implementation plus evidence for the claimed runtime or user scenario
 - `blocked`: progress stopped by a named blocker
 
-Read [summary-schema.md](references/summary-schema.md) when drafting the note structure, [beginner-learning-guide.md](references/beginner-learning-guide.md) when creating explanations and learning checks, and [review-policy.md](references/review-policy.md) when deciding whether an update needs confirmation or how to handle sensitive evidence.
+Read [summary-schema.md](references/summary-schema.md) when drafting the note
+structure and capture identity. Build its redacted canonical evidence manifest,
+compute `evidence_hash`, and derive `capture_id` before duplicate detection.
+When the repository helpers are available, use
+`scripts/new-evidence-identity.ps1` on Windows or
+`scripts/new-evidence-identity.sh` on macOS instead of inventing an identity.
+Record `source_commit` when Git provides it and set `verified_at` only when the
+verification status is `verified`. Read
+[beginner-learning-guide.md](references/beginner-learning-guide.md) when
+creating explanations and learning checks, and
+[review-policy.md](references/review-policy.md) when deciding whether an update
+needs confirmation or how to handle sensitive evidence.
 
 ## Beginner-first expanded capture mode
 
-The default metadata is `audience: beginner-programmer` and
+The default metadata is `schema_version: 2`,
+`audience: beginner-programmer`, `capture_mode: expanded`, and
 `detail_level: expanded`. “Beginner-first” does not mean removing technical
 accuracy. Explain each important idea in two layers: a plain-language mental
 model first, then the exact code, symbol, data flow, or test evidence. Define a
@@ -134,9 +152,9 @@ keep secrets redacted.
 
 ## Obsidian write contract
 
-Use the connected Obsidian MCP server after approval. Prefer its structured vault read/write/patch/search tools; do not fall back to arbitrary local file writes when the MCP connection is unavailable. If the required MCP capability is missing, report the exact setup issue and do not claim that anything was written.
+Use the connected Obsidian MCP server after approval. Prefer its structured vault read/write/patch/search tools; do not fall back to arbitrary local file writes when the MCP connection is unavailable. If the required MCP capability is missing, report the exact setup issue and do not claim that anything was written. A matching `capture_id` or `evidence_hash` with no content delta is a successful no-op, not a reason to duplicate notes.
 
-The canonical layout, relative to the configured note root, is:
+The canonical expanded layout, relative to the configured note root, is:
 
 ```text
 <project>/
@@ -153,7 +171,7 @@ The canonical layout, relative to the configured note root, is:
 
 For example, when `noteRoot` is `Codex知识库`, the project overview is written to `Codex知识库/<project>/00-项目总览.md` relative to the Vault.
 
-Create a feature directory for a new feature. For an existing feature, preview a patch to the affected notes rather than replacing the whole directory. Keep implementation details, evidence, reusable knowledge, and future work separate. Update the project overview only with stable conclusions and confirmed status.
+Create a feature directory for a new feature only when the selected capture mode includes feature notes. For an existing feature, preview a patch to the affected notes rather than replacing the whole directory. `update-only` must stop at preview when the target does not exist. Keep implementation details, evidence, reusable knowledge, and future work separate. Update the project overview only with stable conclusions and confirmed status.
 
 Use safe slug IDs for `<project>` and `<feature>` and retain display names in frontmatter/headings. Validate every generated path segment immediately before the MCP operation; do not let Markdown, wikilinks, or user text introduce extra path components.
 

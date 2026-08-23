@@ -1,5 +1,7 @@
 # Getting started
 
+写入流程当前支持 Windows 和 macOS 本地 Codex；其他表面的限制见 [platform-support.md](platform-support.md)。
+
 本指南面向第一次使用本项目、希望从 Codex 生成代码中学习编程知识的初级程序员，覆盖从 `git clone` 到完成第一次知识沉淀。
 
 ## 前置条件
@@ -157,6 +159,18 @@ bash ./scripts/doctor.sh --vault '/Users/you/Obsidian/MyVault'
 ### MCP initialize 失败
 
 先确认 Obsidian 正在运行、社区插件已启用，并在 bootstrap 后重启过 Obsidian 和 Codex。若 HTTPS 失败是因为本机证书不受信任，再显式使用 `-AllowInsecureHttp` 或 `--allow-insecure-http` 重新初始化，然后重新运行 doctor。
+
+如果 doctor 报告 endpoint 与插件 HTTP 开关不一致，可在确认后运行：
+
+```powershell
+.\scripts\doctor.ps1 -VaultPath 'C:\path\to\your\vault' -Repair -Approve
+```
+
+```bash
+bash ./scripts/doctor.sh --vault '/Users/you/Obsidian/MyVault' --repair --approve
+```
+
+密钥轮换、断开连接和卸载命令见 README 的 “Connection lifecycle”。这些命令默认保留所有 Markdown 知识笔记。
 
 ### 安装时报 marketplace 或缓存冲突
 

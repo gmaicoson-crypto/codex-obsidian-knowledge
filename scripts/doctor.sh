@@ -6,6 +6,8 @@ METADATA_PATH="$SCRIPT_DIR/upstream-assets.json"
 VAULT_PATH=""
 CODEX_CONFIG_PATH="${CODEX_HOME:-$HOME/.codex}/config.toml"
 ALLOW_INSECURE_HTTP=0
+REPAIR=0
+APPROVED=0
 SECRET_ENV_NAME='OBSIDIAN_LOCAL_REST_API_KEY'
 failures=0
 
@@ -14,7 +16,9 @@ while [[ $# -gt 0 ]]; do
     --vault) VAULT_PATH="${2:?Missing value for --vault}"; shift 2 ;;
     --codex-config) CODEX_CONFIG_PATH="${2:?Missing value for --codex-config}"; shift 2 ;;
     --allow-insecure-http) ALLOW_INSECURE_HTTP=1; shift ;;
-    -h|--help) echo 'Usage: ./scripts/doctor.sh --vault /absolute/path/to/vault [--allow-insecure-http]'; exit 0 ;;
+    --repair) REPAIR=1; shift ;;
+    --approve) APPROVED=1; shift ;;
+    -h|--help) echo 'Usage: ./scripts/doctor.sh --vault /absolute/path/to/vault [--allow-insecure-http] [--repair --approve]'; exit 0 ;;
     *) echo "Unknown option: $1" >&2; exit 2 ;;
   esac
 done
@@ -164,6 +168,37 @@ if [[ -f "$CODEX_CONFIG_PATH" ]] && mcp_section_exists "$CODEX_CONFIG_PATH"; the
   endpoint="$(mcp_value "$CODEX_CONFIG_PATH" url)"
   configured_env_name="$(mcp_value "$CODEX_CONFIG_PATH" bearer_token_env_var)"
 fi
+if [[ "$REPAIR" -eq 1 ]]; then
+  [[ "$APPROVED" -eq 1 ]] || { echo 'Doctor repair changes plugin settings and the current-user credential. Re-run with --repair --approve after confirmation.' >&2; exit 1; }
+  [[ -n "$api_key" && "$endpoint" =~ ^(https|http)://127\.0\.0\.1:([0-9]+)/mcp/$ ]] || { echo 'Cannot repair missing credentials or an unsupported endpoint.' >&2; exit 1; }
+  [[ "$configured_env_name" == "$SECRET_ENV_NAME" ]] || { echo 'Cannot repair a Codex config that uses a different bearer_token_env_var.' >&2; exit 1; }
+  repair_insecure=0
+  [[ "${BASH_REMATCH[1]}" == 'http' ]] && repair_insecure=1
+  repair_current="$(launchctl getenv "$SECRET_ENV_NAME" 2>/dev/null || true)"
+  repair_process="${OBSIDIAN_LOCAL_REST_API_KEY-}"
+  [[ -z "$repair_current" || "$repair_current" == "$api_key" ]] || { echo "$SECRET_ENV_NAME belongs to a different Vault; refusing to replace it." >&2; exit 1; }
+  [[ -z "$repair_process" || "$repair_process" == "$api_key" ]] || { echo "$SECRET_ENV_NAME in the current process belongs to a different Vault; refusing to replace it." >&2; exit 1; }
+  repair_data="$(mktemp "${TMPDIR:-/tmp}/codex-obsidian-doctor-data.XXXXXX")"
+  REPAIR_SOURCE="$data_path" REPAIR_TARGET="$repair_data" REPAIR_INSECURE="$repair_insecure" osascript -l JavaScript <<'JXA'
+ObjC.import('Foundation');
+const source = $.getenv('REPAIR_SOURCE');
+const target = $.getenv('REPAIR_TARGET');
+const raw = ObjC.unwrap($.NSString.stringWithContentsOfFileEncodingError(source, $.NSUTF8StringEncoding, null));
+const data = JSON.parse(raw.replace(/^\uFEFF/, ''));
+data.enableInsecureServer = $.getenv('REPAIR_INSECURE') === '1';
+const text = JSON.stringify(data, null, 2) + '\n';
+if (!$.NSString.stringWithString(text).writeToFileAtomicallyEncodingError(target, true, $.NSUTF8StringEncoding, null)) throw new Error('Could not stage data.json');
+JXA
+  mv -f -- "$repair_data" "$data_path"
+  launchctl setenv "$SECRET_ENV_NAME" "$api_key"
+  export "$SECRET_ENV_NAME=$api_key"
+  zshenv="$HOME/.zshenv"; begin='# BEGIN codex-obsidian-knowledge'; end='# END codex-obsidian-knowledge'
+  repair_clean="$(mktemp "${TMPDIR:-/tmp}/codex-obsidian-doctor-zshenv.XXXXXX")"
+  if [[ -f "$zshenv" ]]; then awk -v begin="$begin" -v end="$end" '$0 == begin {skip=1; next} $0 == end {skip=0; next} !skip {print}' "$zshenv" > "$repair_clean"; fi
+  printf '\n%s\nexport %s=%q\n%s\n' "$begin" "$SECRET_ENV_NAME" "$api_key" "$end" >> "$repair_clean"
+  chmod 600 "$repair_clean"; mv -f -- "$repair_clean" "$zshenv"
+  echo '[REPAIR] Reconciled the plugin protocol mode and current-user credential with Codex config (key hidden).'
+fi
 check 'Codex MCP section' "$config_ok" '[mcp_servers.obsidian]'
 check 'Codex MCP endpoint' $([[ -n "$endpoint" ]] && echo 1 || echo 0) "${endpoint:-missing url entry}"
 startup_timeout="$(mcp_value "$CODEX_CONFIG_PATH" startup_timeout_sec 2>/dev/null || true)"
@@ -195,10 +230,16 @@ if [[ "$endpoint_scheme" == 'http' && "$ALLOW_INSECURE_HTTP" -ne 1 ]]; then http
 http_intent_detail='HTTPS or explicit fallback'
 [[ "$endpoint_scheme" == 'http' ]] && http_intent_detail='Requires --allow-insecure-http'
 check 'HTTP fallback selection' "$http_intent_ok" "$http_intent_detail"
-if [[ "$endpoint_scheme" == 'http' && -f "$data_path" ]]; then
-  http_server_ok=0
-  json_bool_field "$data_path" enableInsecureServer && http_server_ok=1
-  check 'Plugin HTTP server' "$http_server_ok" 'enableInsecureServer must be true'
+if [[ -n "$endpoint_scheme" && -f "$data_path" ]]; then
+  protocol_mode_ok=0
+  if [[ "$endpoint_scheme" == 'http' ]]; then
+    json_bool_field "$data_path" enableInsecureServer && protocol_mode_ok=1
+    protocol_mode_detail='HTTP endpoint requires enableInsecureServer=true'
+  else
+    if ! json_bool_field "$data_path" enableInsecureServer; then protocol_mode_ok=1; fi
+    protocol_mode_detail='HTTPS endpoint requires enableInsecureServer=false'
+  fi
+  check 'Plugin protocol mode' "$protocol_mode_ok" "$protocol_mode_detail"
 fi
 
 mcp_json_response_name() {
@@ -214,7 +255,7 @@ JXA
 }
 
 if [[ "$endpoint_supported" -eq 1 && "$http_intent_ok" -eq 1 && "$keys_match" -eq 1 ]]; then
-  curl_args=(--fail --silent --show-error --max-time 5 -H "Authorization: Bearer $configured_token" -H 'Accept: application/json, text/event-stream' -H 'Content-Type: application/json' --data '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"codex-obsidian-knowledge-doctor","version":"0.2.0"}}}')
+  curl_args=(--fail --silent --show-error --max-time 5 -H "Authorization: Bearer $configured_token" -H 'Accept: application/json, text/event-stream' -H 'Content-Type: application/json' --data '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"codex-obsidian-knowledge-doctor","version":"0.3.0"}}}')
   response=''
   if response="$(curl "${curl_args[@]}" "$endpoint" 2>/dev/null)" && server_name="$(mcp_json_response_name "$response" 2>/dev/null)"; then
     check 'MCP initialize' 1 "$server_name"

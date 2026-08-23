@@ -5,25 +5,63 @@ Each feature directory contains six notes. Keep the frontmatter consistent so no
 ```yaml
 ---
 type: code-feature-summary
+schema_version: 2
+note_kind: feature-overview | implementation-details | implementation-effect | knowledge-application | iteration-roadmap | source-index
 project: <project-id>
 feature: <feature-id>
 status: analysis | design | implemented | verified | blocked
 review: pending | accepted
 source: codex
 source_thread_id: <thread-id-or-unknown>
+capture_id: <stable-capture-id>
+evidence_hash: <sha256>
+source_commit: <git-sha-or-unknown>
+verified_at: <ISO-8601-timestamp-or-null>
 updated: YYYY-MM-DD
 audience: beginner-programmer
-detail_level: expanded
+detail_level: compact | expanded
+capture_mode: compact | expanded | architecture-only | update-only
 tags:
   - code
 ---
 ```
 
-`audience: beginner-programmer` marks the default reader: a beginning
-programmer learning from code created or changed with Codex. `detail_level` is
-`expanded` for the default capture mode. Older notes without either field
-remain valid; an update preview may add them without changing stable project
-or feature IDs.
+`schema_version: 2` identifies the query and migration contract. `note_kind`
+distinguishes the six feature documents without relying on filenames.
+`capture_id` is the idempotency key for one evidence set and `evidence_hash`
+is the SHA-256 of its canonical evidence manifest. `source_commit` anchors
+code locations to a repository state. Set `verified_at` only when the status is
+`verified`; otherwise use `null`.
+
+`audience: beginner-programmer` marks the default reader. `capture_mode` says
+which document set was requested; `detail_level` describes the prose density.
+Older notes without these fields remain valid. An update preview may migrate
+them to schema version 2 without changing stable project or feature IDs.
+
+## Identity and duplicate detection
+
+Before previewing a write, build a canonical evidence manifest containing the
+project ID, feature ID, source thread ID when known, source commit when known,
+relevant file/symbol identifiers, decisions, and exact verification results.
+Normalize line endings and sort unordered file/test entries, then compute its
+SHA-256 as `evidence_hash`. Never include secret values in the manifest.
+
+Use `capture_id` in this order:
+
+1. `codex:<thread-id>:<project>:<feature>:<hash-prefix>` when a source thread ID
+   is available;
+2. `<project>:<feature>:<source-commit>:<hash-prefix>` when a commit is known;
+3. `<project>:<feature>:<hash-prefix>` otherwise.
+
+An existing matching `capture_id` or `evidence_hash` means the evidence is
+already captured. Preview no write when content is unchanged; otherwise show
+only the metadata or merge delta. Do not create a second feature directory.
+
+## Capture modes
+
+Read [capture-modes.md](capture-modes.md) for document selection and mode
+boundaries. The default remains `expanded`. The preview must name the selected
+mode and every note that will be created, patched, or intentionally omitted.
 
 ## Detail standard
 
@@ -103,14 +141,18 @@ readable as an entry point; put deep call-chain detail in `01-实现细节.md`.
 
 ## Project-level notes
 
-`<project>/00-项目总览.md` uses `type: code-project-overview`, `project`,
-`review`, `updated`, `audience`, `detail_level`, and `tags`. It is a compact,
+`<project>/00-项目总览.md` uses `type: code-project-overview`,
+`schema_version`, `note_kind: project-overview`, `project`, `review`,
+`updated`, `audience`, `detail_level`, `capture_mode`, `source_commit`, and
+`tags`. It is a compact,
 beginner-friendly entry point containing purpose, suggested reading order,
 minimal run/debug guidance, architecture, status, risks, and feature links; it
 must not duplicate the detailed feature notes.
 
-`<project>/01-架构与术语.md` uses `type: code-project-architecture`, `project`,
-`review`, `updated`, `audience`, `detail_level`, and `tags`. It records the
+`<project>/01-架构与术语.md` uses `type: code-project-architecture`,
+`schema_version`, `note_kind: project-architecture`, `project`, `review`,
+`updated`, `audience`, `detail_level`, `capture_mode`, `source_commit`, and
+`tags`. It records the
 system boundary, components, numbered data/control flow, invariants, a
 project-grounded glossary, compatibility assumptions, and evidence. It is
 created or updated only when architecture evidence exists.

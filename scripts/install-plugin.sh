@@ -58,7 +58,10 @@ if [[ -z "$plugin_name" || -z "$marketplace_name" ]]; then
   printf '%s\n' 'Plugin or marketplace manifest is missing its name.' >&2
   exit 1
 fi
+[[ "$plugin_name" =~ ^[A-Za-z0-9_-]+(\.[A-Za-z0-9_-]+)*$ ]] || { printf 'Invalid plugin name in manifest: %s\n' "$plugin_name" >&2; exit 1; }
+[[ "$marketplace_name" =~ ^[A-Za-z0-9_-]+$ ]] || { printf 'Invalid marketplace name in manifest: %s\n' "$marketplace_name" >&2; exit 1; }
 plugin_selector="$plugin_name@$marketplace_name"
+bash "$repo_root/scripts/build-plugin-package.sh" >/dev/null
 user_codex_root="${CODEX_HOME:-$HOME/.codex}"
 cache_path="$user_codex_root/plugins/cache/$marketplace_name/$plugin_name/local"
 
@@ -67,7 +70,7 @@ if ! plugins="$(codex plugin list 2>&1)"; then
   exit 1
 fi
 plugin_already_installed=0
-if printf '%s\n' "$plugins" | grep -Eq "^[[:space:]]*${plugin_selector}[[:space:]]+installed"; then plugin_already_installed=1; fi
+if printf '%s\n' "$plugins" | awk -v selector="$plugin_selector" '$1 == selector && $2 ~ /^installed/ { found=1 } END { exit !found }'; then plugin_already_installed=1; fi
 if [[ "$plugin_already_installed" -eq 0 && -e "$cache_path" ]]; then
   printf 'Plugin cache path already exists and is not reported as this installed plugin: %s. Refusing to overwrite it.\n' "$cache_path" >&2
   exit 1
@@ -77,11 +80,13 @@ if ! marketplaces="$(codex plugin marketplace list 2>&1)"; then
   printf '%s\n' 'Could not inspect configured Codex marketplaces. No files or configuration were changed.' >&2
   exit 1
 fi
-if ! printf '%s\n' "$marketplaces" | grep -Fq "$marketplace_name"; then
+marketplace_added_by_this_run=0
+marketplace_line="$(printf '%s\n' "$marketplaces" | awk -v name="$marketplace_name" '$1 == name { print; exit }')"
+if [[ -z "$marketplace_line" ]]; then
   printf 'Registering repository marketplace: %s\n' "$marketplace_name"
   codex plugin marketplace add "$repo_root"
+  marketplace_added_by_this_run=1
 else
-  marketplace_line="$(printf '%s\n' "$marketplaces" | grep -F "$marketplace_name" | head -n 1)"
   if ! printf '%s\n' "$marketplace_line" | grep -Fq "$repo_root"; then
     printf "Marketplace '%s' already exists at a different location. No files or configuration were changed.\n" "$marketplace_name" >&2
     exit 1
@@ -93,7 +98,16 @@ if [[ "$plugin_already_installed" -eq 1 ]]; then
   printf 'Plugin is already installed: %s\n' "$plugin_selector"
 else
   printf 'Installing plugin: %s\n' "$plugin_selector"
-  codex plugin add "$plugin_selector"
+  if ! codex plugin add "$plugin_selector"; then
+    if [[ "$marketplace_added_by_this_run" -eq 1 ]]; then
+      if codex plugin marketplace remove "$marketplace_name"; then
+        printf 'Rolled back marketplace registration: %s\n' "$marketplace_name"
+      else
+        printf "Plugin installation failed and marketplace rollback also failed. Remove '%s' manually.\n" "$marketplace_name" >&2
+      fi
+    fi
+    exit 1
+  fi
 fi
 
 printf '%s\n' 'Codex plugin installation is complete.'

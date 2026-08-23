@@ -5,6 +5,8 @@
 /.codex-obsidian-knowledge.json
 state/
 logs/
+/plugins/
+/tests/.tmp-*
 
 # Editor and OS files
 .idea/

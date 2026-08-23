@@ -6,7 +6,7 @@ Security fixes are applied to the latest version on the default branch. The proj
 
 ## Reporting a vulnerability
 
-Do not include API keys, bearer tokens, cookies, private keys, or complete Vault contents in a public issue. Report the affected file, impact, reproduction conditions using synthetic values, and a proposed mitigation through the repository's private security-reporting channel when one is available.
+Do not include API keys, bearer tokens, cookies, private keys, or complete Vault contents in a public issue. Report the affected file, impact, reproduction conditions using synthetic values, and a proposed mitigation through [GitHub Security Advisories](https://github.com/gmaicoson-crypto/codex-obsidian-knowledge/security/advisories/new).
 
 ## Scope
 

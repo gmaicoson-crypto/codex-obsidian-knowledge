@@ -173,7 +173,7 @@ if (exists) {
 if (mode === 'data') {
   if (typeof data !== 'object' || data === null || Array.isArray(data)) throw new Error('data.json must contain an object');
   if (!data.apiKey) data.apiKey = newApiKey;
-  if (enableInsecureServer) data.enableInsecureServer = true;
+  data.enableInsecureServer = enableInsecureServer;
 } else if (mode === 'plugins') {
   if (!exists) data = [];
   else if (!Array.isArray(data)) throw new Error('community-plugins.json must contain an array');

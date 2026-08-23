@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Codex Obsidian Knowledge icon">
+  <rect width="128" height="128" rx="28" fill="#6C63FF"/>
+  <path d="M31 28h45c12 0 21 9 21 21v51H52c-12 0-21-9-21-21V28Z" fill="#fff"/>
+  <path d="M48 48h33M48 63h33M48 78h21" stroke="#6C63FF" stroke-width="7" stroke-linecap="round"/>
+  <path d="M88 75l15 9-15 9V75Z" fill="#2E2A66"/>
+</svg>

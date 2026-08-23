@@ -1,10 +1,14 @@
 ---
 type: code-project-architecture
+schema_version: 2
+note_kind: project-architecture
 project: <project-id>
 review: pending
 updated: YYYY-MM-DD
 audience: beginner-programmer
 detail_level: expanded
+capture_mode: expanded
+source_commit: unknown
 tags:
   - code
 ---

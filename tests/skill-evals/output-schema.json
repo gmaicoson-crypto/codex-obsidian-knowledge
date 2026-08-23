@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "case_id",
+    "should_capture",
+    "status",
+    "capture_mode",
+    "write_allowed",
+    "redaction_required",
+    "duplicate_action",
+    "reason"
+  ],
+  "properties": {
+    "case_id": { "type": "string" },
+    "should_capture": { "type": "boolean" },
+    "status": { "enum": ["none", "analysis", "design", "implemented", "verified", "blocked"] },
+    "capture_mode": { "enum": ["none", "compact", "expanded", "architecture-only", "update-only"] },
+    "write_allowed": { "type": "boolean" },
+    "redaction_required": { "type": "boolean" },
+    "duplicate_action": { "enum": ["none", "create", "patch", "noop", "blocked-missing-target"] },
+    "reason": { "type": "string" }
+  }
+}

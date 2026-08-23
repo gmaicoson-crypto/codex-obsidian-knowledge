@@ -48,7 +48,9 @@
 
 ## Incremental updates
 
-第一次沉淀创建项目总览和功能目录。再次讨论同一功能时，使用 `project`、`feature`、`source_thread_id` 和内容指纹识别重复；预览对现有笔记的增量更新，并保留历史证据和已确认结论。
+第一次沉淀按预览中的 `capture_mode` 创建所需笔记。再次讨论同一功能时，使用 `project`、`feature`、`source_thread_id`、`source_commit`、`capture_id` 和 `evidence_hash` 识别重复；完全相同的证据返回 no-op，有内容差异时只预览增量，并保留历史证据和已确认结论。
+
+模式选择：`compact` 用于小而独立的改动，`expanded` 用于完整学习集，`architecture-only` 只维护项目架构，`update-only` 只补丁已有笔记。模式转换不删除既有文件。
 
 项目总览只保留稳定结论、功能状态矩阵、风险和索引，不复制功能笔记的全部实现细节。
 

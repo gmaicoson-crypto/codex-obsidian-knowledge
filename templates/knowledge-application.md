@@ -1,14 +1,21 @@
 ---
 type: code-feature-summary
+schema_version: 2
+note_kind: knowledge-application
 project: <project-id>
 feature: <feature-id>
 status: analysis
 review: pending
 source: codex
 source_thread_id: unknown
+capture_id: <capture-id>
+evidence_hash: <sha256>
+source_commit: unknown
+verified_at: null
 updated: YYYY-MM-DD
 audience: beginner-programmer
 detail_level: expanded
+capture_mode: expanded
 tags:
   - code
 ---

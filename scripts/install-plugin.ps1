@@ -28,7 +28,12 @@ $manifest = Get-Content -LiteralPath $manifestPath -Raw -Encoding UTF8 | Convert
 $marketplace = Get-Content -LiteralPath $marketplacePath -Raw -Encoding UTF8 | ConvertFrom-Json
 $pluginName = [string]$manifest.name
 $marketplaceName = [string]$marketplace.name
+if ($pluginName -notmatch '^[A-Za-z0-9_-]+(?:\.[A-Za-z0-9_-]+)*$') { throw "Invalid plugin name in manifest: $pluginName" }
+if ($marketplaceName -notmatch '^[A-Za-z0-9_-]+$') { throw "Invalid marketplace name in manifest: $marketplaceName" }
 $pluginSelector = "$pluginName@$marketplaceName"
+$packageBuilder = Join-Path $repoRoot 'scripts\build-plugin-package.ps1'
+if (-not (Test-Path -LiteralPath $packageBuilder -PathType Leaf)) { throw "Plugin package builder not found: $packageBuilder" }
+& $packageBuilder | Out-Null
 $userCodexRoot = if ([string]::IsNullOrWhiteSpace($env:CODEX_HOME)) {
     Join-Path ([Environment]::GetFolderPath('UserProfile')) '.codex'
 }
@@ -67,12 +72,14 @@ $pluginAlreadyInstalled = $plugins -match $installedPattern
 if (-not $pluginAlreadyInstalled -and (Test-Path -LiteralPath $cachePath)) {
     throw "Plugin cache path already exists and is not reported as this installed plugin: $cachePath. Refusing to overwrite it."
 }
-if ($marketplaces -notmatch [regex]::Escape($marketplaceName)) {
+$marketplaceAddedByThisRun = $false
+$matchingMarketplaceLine = $marketplaceLines | Where-Object { (@([string]$_ -split '\s+', 2))[0] -eq $marketplaceName } | Select-Object -First 1
+if ($null -eq $matchingMarketplaceLine) {
     Write-Output "Registering repository marketplace: $marketplaceName"
     Invoke-Codex @('plugin', 'marketplace', 'add', $repoRoot)
+    $marketplaceAddedByThisRun = $true
 }
 else {
-    $matchingMarketplaceLine = $marketplaceLines | Where-Object { $_ -match [regex]::Escape($marketplaceName) } | Select-Object -First 1
     $normalizedMarketplaceOutput = Normalize-PathText ([string]$matchingMarketplaceLine)
     $normalizedRepoRoot = Normalize-PathText $repoRoot
     if (-not $normalizedMarketplaceOutput.Contains($normalizedRepoRoot)) {
@@ -86,7 +93,21 @@ if ($pluginAlreadyInstalled) {
 }
 else {
     Write-Output "Installing plugin: $pluginSelector"
-    Invoke-Codex @('plugin', 'add', $pluginSelector)
+    try {
+        Invoke-Codex @('plugin', 'add', $pluginSelector)
+    }
+    catch {
+        if ($marketplaceAddedByThisRun) {
+            try {
+                Invoke-Codex @('plugin', 'marketplace', 'remove', $marketplaceName)
+                Write-Output "Rolled back marketplace registration: $marketplaceName"
+            }
+            catch {
+                Write-Warning "Plugin installation failed and marketplace rollback also failed. Remove '$marketplaceName' manually."
+            }
+        }
+        throw
+    }
 }
 
 Write-Output 'Codex plugin installation is complete.'

@@ -1,10 +1,14 @@
 ---
 type: code-project-overview
+schema_version: 2
+note_kind: project-overview
 project: <project-id>
 review: pending
 updated: YYYY-MM-DD
 audience: beginner-programmer
 detail_level: expanded
+capture_mode: expanded
+source_commit: unknown
 tags:
   - code
 ---

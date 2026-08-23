@@ -1,20 +1,33 @@
 {
   "name": "codex-obsidian-knowledge",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Turn Codex-written code into reviewable, beginner-friendly programming knowledge in Obsidian.",
   "author": {
-    "name": "Open source contributors"
+    "name": "gmaicoson-crypto",
+    "url": "https://github.com/gmaicoson-crypto"
   },
+  "homepage": "https://github.com/gmaicoson-crypto/codex-obsidian-knowledge",
+  "repository": "https://github.com/gmaicoson-crypto/codex-obsidian-knowledge",
+  "license": "MIT",
+  "keywords": ["codex", "obsidian", "learning", "knowledge-management"],
   "skills": "./skills/",
   "interface": {
     "displayName": "Codex Obsidian Knowledge",
     "shortDescription": "Learn from Codex-written code in Obsidian.",
     "longDescription": "Turn code discussions and implementations into beginner-friendly project and feature learning notes, including plain-language terms, architecture, implementation walkthroughs, debugging guidance, and self-checks. Every write requires an explicit preview and confirmation.",
-    "developerName": "Open source contributors",
+    "developerName": "gmaicoson-crypto",
     "category": "Productivity",
     "capabilities": [],
+    "websiteURL": "https://github.com/gmaicoson-crypto/codex-obsidian-knowledge",
+    "privacyPolicyURL": "https://github.com/gmaicoson-crypto/codex-obsidian-knowledge/blob/main/PRIVACY.md",
+    "termsOfServiceURL": "https://github.com/gmaicoson-crypto/codex-obsidian-knowledge/blob/main/LICENSE",
+    "brandColor": "#6C63FF",
+    "composerIcon": "./assets/icon.svg",
+    "logo": "./assets/logo.svg",
+    "logoDark": "./assets/logo-dark.svg",
+    "screenshots": ["./assets/demo.png"],
     "defaultPrompt": [
-      "Use code-knowledge-capture to preview a beginner-friendly learning summary of this code discussion before writing it to Obsidian."
+      "Use code-knowledge-capture to preview this coding work in compact or expanded learning-note mode before writing it to Obsidian."
     ]
   }
 }

@@ -27,9 +27,10 @@ Codex MCP client ── Bearer token ──> Obsidian Local REST API MCP endpoin
 1. Skill 判断用户是否明确要求知识沉淀。
 2. Skill 只读收集当前任务、当前项目、变更文件、测试/构建证据和已有目标笔记。
 3. Skill 同时建立证据地图和学习地图。证据地图将结论分为 `[事实]`、`[推断]`、`[计划]`、`[待确认]`；学习地图识别前置知识、关键术语、架构心智模型、真实代码路径、调试入口和自测目标。
-4. Skill 按“通俗理解 → 本项目中的文件/符号/数据流证据”组织解释，展示拟创建或更新的项目总览、架构术语、功能笔记和来源索引，并选择 `analysis`、`design`、`implemented`、`verified` 或 `blocked` 状态。
-5. 用户确认后，Codex 使用 Obsidian MCP 的结构化工具创建目录对应的 Markdown 笔记；更新已有功能时只提交预览中批准的增量。
-6. Skill 回读笔记，核对路径、frontmatter 和关键内容，再向用户报告结果。
+4. Skill 生成脱敏、排序后的规范证据清单，计算 `evidence_hash` 和稳定 `capture_id`，并记录源 commit；匹配现有身份且内容无变化时返回 no-op。
+5. Skill 按“通俗理解 → 本项目中的文件/符号/数据流证据”组织解释，展示捕获模式、拟创建或更新的项目总览、架构术语、功能笔记和来源索引，并选择 `analysis`、`design`、`implemented`、`verified` 或 `blocked` 状态。
+6. 用户确认后，Codex 使用 Obsidian MCP 的结构化工具创建目录对应的 Markdown 笔记；更新已有功能时只提交预览中批准的增量。
+7. Skill 回读笔记，核对路径、frontmatter 和关键内容，再向用户报告结果。
 
 ## Learning model
 
@@ -60,6 +61,8 @@ tool_timeout_sec = 60
 ```
 
 当自签名 HTTPS 证书无法被客户端信任时，`-AllowInsecureHttp` 或 `--allow-insecure-http` 会启用插件的回环 HTTP server，并将 endpoint 切换到 `http://127.0.0.1:27123/mcp/`。诊断脚本读取 Codex 的实际配置和凭据来源，核对插件身份、启用状态、API key、超时、回环边界，并执行经过认证且结构完整的 MCP `initialize` 请求；HTTPS 证书不受信任时诊断会失败并提示信任证书或改用 HTTP fallback。
+
+协议状态是双向约束：HTTP endpoint 要求 `enableInsecureServer=true`，HTTPS endpoint 要求 `false`。doctor 会检测漂移，只有显式 `Repair + Approve` 才会修改插件状态和凭据来源。
 
 ## Data ownership
 

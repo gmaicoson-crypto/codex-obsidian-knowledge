@@ -6,7 +6,11 @@ param(
 
     [string]$CodexConfigPath,
 
-    [switch]$AllowInsecureHttp
+    [switch]$AllowInsecureHttp,
+
+    [switch]$Repair,
+
+    [switch]$Approve
 )
 
 $ErrorActionPreference = 'Stop'
@@ -93,6 +97,49 @@ $communityPluginsPath = Join-Path $resolvedVault '.obsidian\community-plugins.js
 $vaultExists = Test-Path -LiteralPath $resolvedVault -PathType Container
 Report-Check 'Vault' $vaultExists $resolvedVault
 if (-not $vaultExists) { Write-Output ''; Write-Output 'Doctor cannot continue without a Vault.'; exit 1 }
+
+if ($Repair) {
+    if (-not $Approve) { throw 'Doctor repair changes plugin settings and the current-user credential. Re-run with -Repair -Approve after confirmation.' }
+    if (-not $IsWindows -and $PSVersionTable.PSVersion.Major -ge 6) { throw 'Use doctor.sh --repair --approve on macOS.' }
+    if (-not (Test-Path -LiteralPath $dataPath -PathType Leaf)) { throw "Cannot repair because plugin settings are missing: $dataPath" }
+    if (-not (Test-Path -LiteralPath $resolvedConfig -PathType Leaf)) { throw "Cannot repair because Codex config is missing: $resolvedConfig" }
+    $repairData = Get-Content -LiteralPath $dataPath -Raw -Encoding UTF8 | ConvertFrom-Json
+    $repairConfig = Get-Content -LiteralPath $resolvedConfig -Raw -Encoding UTF8
+    $repairParsed = Get-McpConfigValues $repairConfig
+    $repairEndpoint = if ($repairParsed.Exists) { [string]$repairParsed.Values.url } else { '' }
+    $repairEnvName = if ($repairParsed.Exists) { [string]$repairParsed.Values.bearer_token_env_var } else { '' }
+    if ($repairEnvName -ne 'OBSIDIAN_LOCAL_REST_API_KEY') {
+        throw 'Cannot repair a Codex config that uses a different bearer_token_env_var.'
+    }
+    $repairUri = [System.Uri]$repairEndpoint
+    if ($repairUri.Scheme -notin @('http', 'https') -or $repairUri.Host -ne '127.0.0.1' -or $repairUri.AbsolutePath -ne '/mcp/') {
+        throw 'Cannot repair an unsupported or non-loopback endpoint.'
+    }
+    $repairKey = [string]$repairData.apiKey
+    if ([string]::IsNullOrWhiteSpace($repairKey)) { throw 'Cannot repair because the plugin API key is missing.' }
+    $userKey = [Environment]::GetEnvironmentVariable('OBSIDIAN_LOCAL_REST_API_KEY', 'User')
+    $processKey = [Environment]::GetEnvironmentVariable('OBSIDIAN_LOCAL_REST_API_KEY', 'Process')
+    if (-not [string]::IsNullOrWhiteSpace($userKey) -and $userKey -cne $repairKey) {
+        throw 'The current-user OBSIDIAN_LOCAL_REST_API_KEY belongs to a different Vault. Refusing to replace it.'
+    }
+    if (-not [string]::IsNullOrWhiteSpace($processKey) -and $processKey -cne $repairKey) {
+        throw 'The process OBSIDIAN_LOCAL_REST_API_KEY belongs to a different Vault. Refusing to replace it.'
+    }
+    $expectedInsecure = $repairUri.Scheme -eq 'http'
+    if ($repairData.psobject.Properties.Name -contains 'enableInsecureServer') { $repairData.enableInsecureServer = $expectedInsecure }
+    else { $repairData | Add-Member -MemberType NoteProperty -Name enableInsecureServer -Value $expectedInsecure }
+    $repairTemporary = Join-Path $pluginDir ('.data.json.' + [guid]::NewGuid().ToString('N') + '.tmp')
+    try {
+        [System.IO.File]::WriteAllText($repairTemporary, (ConvertTo-Json -InputObject $repairData -Depth 20) + [Environment]::NewLine, [System.Text.UTF8Encoding]::new($false))
+        Move-Item -LiteralPath $repairTemporary -Destination $dataPath -Force | Out-Null
+        [Environment]::SetEnvironmentVariable('OBSIDIAN_LOCAL_REST_API_KEY', $repairKey, 'User')
+        Set-Item -Path 'Env:OBSIDIAN_LOCAL_REST_API_KEY' -Value $repairKey
+    }
+    finally {
+        if (Test-Path -LiteralPath $repairTemporary) { Remove-Item -LiteralPath $repairTemporary -Force }
+    }
+    Write-Output '[REPAIR] Reconciled the plugin protocol mode and current-user credential with Codex config (key hidden).'
+}
 
 $mainExists = Test-Path -LiteralPath (Join-Path $pluginDir 'main.js') -PathType Leaf
 $manifestExists = Test-Path -LiteralPath $manifestPath -PathType Leaf
@@ -191,15 +238,18 @@ if ($null -ne $endpoint -and -not [string]::IsNullOrWhiteSpace($configuredToken)
         Report-Check 'Endpoint boundary' $loopbackOnly $endpointUri.Host
         $httpIntentDisplay = if ($endpointUri.Scheme -eq 'http') { 'Pass -AllowInsecureHttp explicitly when using HTTP' } else { 'HTTPS' }
         Report-Check 'HTTP fallback selection' $httpIntentOk $httpIntentDisplay
-        if ($pluginData -ne $null -and $endpointUri.Scheme -eq 'http') {
-            Report-Check 'Plugin HTTP server' ([bool]$pluginData.enableInsecureServer) 'enableInsecureServer must be true'
+        if ($pluginData -ne $null) {
+            $expectedInsecureServer = $endpointUri.Scheme -eq 'http'
+            $actualInsecureServer = [bool]$pluginData.enableInsecureServer
+            $protocolModeDetail = if ($expectedInsecureServer) { 'HTTP endpoint requires enableInsecureServer=true' } else { 'HTTPS endpoint requires enableInsecureServer=false' }
+            Report-Check 'Plugin protocol mode' ($actualInsecureServer -eq $expectedInsecureServer) $protocolModeDetail
         }
         if (-not $validScheme -or -not $validPath -or -not $loopbackOnly -or -not $httpIntentOk) { throw 'Unsupported endpoint URL.' }
         $tcpReachable = Test-TcpPort $endpointUri.Host $endpointUri.Port
         Report-Check 'Endpoint TCP' $tcpReachable ("{0}:{1}" -f $endpointUri.Host, $endpointUri.Port)
         if ($tcpReachable) {
             $headers = @{ Authorization = 'Bearer ' + $configuredToken; Accept = 'application/json, text/event-stream' }
-            $body = @{ jsonrpc = '2.0'; id = 1; method = 'initialize'; params = @{ protocolVersion = '2024-11-05'; capabilities = @{}; clientInfo = @{ name = 'codex-obsidian-knowledge-doctor'; version = '0.2.0' } } } | ConvertTo-Json -Depth 8
+            $body = @{ jsonrpc = '2.0'; id = 1; method = 'initialize'; params = @{ protocolVersion = '2024-11-05'; capabilities = @{}; clientInfo = @{ name = 'codex-obsidian-knowledge-doctor'; version = '0.3.0' } } } | ConvertTo-Json -Depth 8
             try {
                 $response = Invoke-WebRequest -Uri $endpoint -Method Post -Headers $headers -ContentType 'application/json' -Body $body -UseBasicParsing -TimeoutSec 5
                 $responseJson = Get-JsonResponse $response.Content

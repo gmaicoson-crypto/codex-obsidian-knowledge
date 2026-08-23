@@ -35,7 +35,14 @@ function Test-UnreviewedHighEntropyToken([string]$Line) {
         $looksLikeRelativeFilePath =
             $candidate -match '^(?:[A-Za-z0-9_-]+/)+[A-Za-z0-9_-]+$' -and
             $followingText -match '^\.[A-Za-z0-9]{1,10}(?:\b|$)'
-        if ($looksLikeRelativeFilePath) { continue }
+        $looksLikeUrlPath = $false
+        foreach ($urlMatch in [regex]::Matches($Line, '(?i)https?://\S+')) {
+            if ($match.Index -ge $urlMatch.Index -and ($match.Index + $match.Length) -le ($urlMatch.Index + $urlMatch.Length)) {
+                $looksLikeUrlPath = $true
+                break
+            }
+        }
+        if ($looksLikeRelativeFilePath -or $looksLikeUrlPath) { continue }
         if ((Get-ShannonEntropy $candidate) -ge 4.2) { return $true }
     }
     return $false

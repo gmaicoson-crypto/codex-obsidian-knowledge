@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 720" role="img" aria-label="Knowledge capture preview demo">
+  <rect width="1200" height="720" fill="#F4F2FF"/>
+  <rect x="55" y="45" width="1090" height="630" rx="24" fill="#fff" stroke="#D8D4FF" stroke-width="3"/>
+  <text x="95" y="105" font-family="Arial, sans-serif" font-size="34" font-weight="700" fill="#27243F">Knowledge capture preview</text>
+  <rect x="95" y="140" width="250" height="42" rx="21" fill="#E9E7FF"/>
+  <text x="120" y="169" font-family="Arial, sans-serif" font-size="22" fill="#5049B8">Mode: compact</text>
+  <text x="95" y="230" font-family="Arial, sans-serif" font-size="26" font-weight="700" fill="#27243F">Target notes</text>
+  <text x="120" y="275" font-family="Arial, sans-serif" font-size="22" fill="#46425E">00-功能总览.md</text>
+  <text x="120" y="315" font-family="Arial, sans-serif" font-size="22" fill="#46425E">01-实现细节.md</text>
+  <text x="120" y="355" font-family="Arial, sans-serif" font-size="22" fill="#46425E">99-相关对话与文件.md</text>
+  <text x="600" y="230" font-family="Arial, sans-serif" font-size="26" font-weight="700" fill="#27243F">Evidence boundary</text>
+  <rect x="600" y="255" width="470" height="118" rx="14" fill="#F8F7FF" stroke="#E1DEFF"/>
+  <text x="625" y="295" font-family="Arial, sans-serif" font-size="21" fill="#46425E">✓ Repository validation passed</text>
+  <text x="625" y="335" font-family="Arial, sans-serif" font-size="21" fill="#8A4561">△ Runtime user flow not verified</text>
+  <text x="95" y="430" font-family="Arial, sans-serif" font-size="26" font-weight="700" fill="#27243F">Write boundary</text>
+  <rect x="95" y="455" width="975" height="92" rx="14" fill="#FFF8E8" stroke="#F2D58C"/>
+  <text x="120" y="500" font-family="Arial, sans-serif" font-size="22" fill="#594515">No note will be written until the user explicitly confirms.</text>
+  <rect x="95" y="585" width="230" height="52" rx="12" fill="#6C63FF"/>
+  <text x="134" y="619" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#fff">Confirm write</text>
+</svg>

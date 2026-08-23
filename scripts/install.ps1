@@ -215,9 +215,10 @@ if ($Protocol -eq 'http' -and -not $AllowInsecureHttp) { throw 'Using HTTP requi
 if ($AllowInsecureHttp) {
     $Protocol = 'http'
     if ($Port -eq 27124) { $Port = 27123 }
-    if ($pluginData.psobject.Properties.Name -contains 'enableInsecureServer') { $pluginData.enableInsecureServer = $true }
-    else { $pluginData | Add-Member -MemberType NoteProperty -Name enableInsecureServer -Value $true }
 }
+$enableInsecureServer = $Protocol -eq 'http'
+if ($pluginData.psobject.Properties.Name -contains 'enableInsecureServer') { $pluginData.enableInsecureServer = $enableInsecureServer }
+else { $pluginData | Add-Member -MemberType NoteProperty -Name enableInsecureServer -Value $enableInsecureServer }
 $endpoint = '{0}://127.0.0.1:{1}/mcp/' -f $Protocol, $Port
 $desiredConfig = Get-DesiredCodexConfig $endpoint
 

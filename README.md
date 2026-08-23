@@ -44,9 +44,11 @@
     └── 99-相关对话与文件.md
 ```
 
-每个功能目录分别记录目标与状态、实现细节、实施效果、可复用知识、后续迭代和证据来源。默认元数据为 `audience: beginner-programmer` 和 `detail_level: expanded`：先用通俗语言建立心智模型，再落到真实文件、符号、数据流和测试证据；最后提供自测与练习，而不是只生成篇幅更长的开发日志。
+每个功能目录分别记录目标与状态、实现细节、实施效果、可复用知识、后续迭代和证据来源。默认使用 `schema_version: 2`、`capture_mode: expanded`、`audience: beginner-programmer` 和 `detail_level: expanded`。每次沉淀还记录 `note_kind`、`capture_id`、`evidence_hash`、`source_commit` 和 `verified_at`，用于查询、迁移、证据锚定和幂等更新。
 
 项目级 `01-架构与术语.md` 从系统边界、组件地图、主流程三个层次解释架构，并维护与真实代码位置关联的术语表。功能级 `01-实现细节.md` 沿一个具体输入跟读调用链，`03-知识应用总结.md` 则沉淀术语、可迁移知识、常见误解、调试方法和练习。
+
+除完整的 `expanded` 外，还支持 `compact`（小改动的三篇功能笔记）、`architecture-only`（只维护项目架构）和 `update-only`（只补丁已有笔记）。模式必须出现在预览中；切换到精简模式不会删除既有笔记。
 
 ## Prerequisites
 
@@ -54,6 +56,8 @@
 
 - Codex Desktop/CLI；
 - Obsidian 桌面版 1.13.1 或更高版本，并至少创建或打开一个 Vault（固定依赖的 Local REST API 5.1.0 要求该最低版本）。
+
+当前写入流程支持 Windows 和 macOS 本地 Codex 环境。Linux/WSL、ChatGPT Web/移动端和 Codex 云端不能直接访问桌面回环 endpoint；详见[平台支持矩阵](docs/platform-support.md)。
 
 首次使用时，本仓库的 Codex 指令会先请求用户确认，然后自动下载并启用 Obsidian 社区插件 `Local REST API with MCP`，校验固定资产哈希，生成本机 API key，并配置 Codex 的本地 MCP 连接。用户无需预先安装 Node.js、Python 或其他 MCP server。
 
@@ -67,7 +71,7 @@
 请把当前文件夹（或这个仓库地址）安装为 Codex 插件并启用。先说明将修改的 Codex 配置范围，确认后执行仓库里的安装入口。
 ```
 
-安装脚本会注册仓库 marketplace，然后调用 Codex CLI 安装插件。清单使用 `AVAILABLE`，避免客户端在用户只是打开仓库时绕过安全检查自动写入插件缓存；只有 Codex 根据明确的安装请求执行脚本时才会安装。
+安装脚本会先从仓库源文件生成被 `.gitignore` 忽略的标准 `plugins/codex-obsidian-knowledge` 分发目录，再注册仓库 marketplace 并调用 Codex CLI 安装。这样 marketplace 使用 `./plugins/<plugin-name>` 布局，同时仓库仍只维护一份源文件。清单使用 `AVAILABLE`，避免客户端在用户只是打开仓库时绕过安全检查自动写入插件缓存；只有 Codex 根据明确的安装请求执行脚本时才会安装。插件安装失败时，本轮新注册的 marketplace 会被回滚。
 
 安装前会检查同名 marketplace 和 Codex 插件缓存。如果发现它们已经指向其他位置，或目标缓存目录已存在但不能确认是本插件，脚本会停止并报告冲突，不会覆盖、删除或替换用户已有的插件文件。
 
@@ -141,6 +145,8 @@ bash ./scripts/bootstrap.sh --vault '/Users/you/Obsidian/MyVault' --approve --al
 HTTP fallback 仍使用 Bearer API key，只接受 `127.0.0.1`，不要将 endpoint 暴露到局域网或公网。
 bootstrap 会在用户明确选择 fallback 时同步启用插件的回环 HTTP server；doctor 会读取 Codex 的实际 MCP 配置和环境变量，并执行经过认证的 MCP `initialize` 请求。
 
+HTTPS 模式会明确关闭 HTTP server。若配置与插件状态漂移，可在确认后执行 `doctor.ps1 -Repair -Approve` 或 `doctor.sh --repair --approve` 修复。
+
 Windows 和 macOS 脚本都遵守 `CODEX_HOME`；macOS 默认还会为 GUI/新 zsh 进程维护 `~/.zshenv` 中的受标记凭据块。若不希望脚本持久化环境变量，可使用 `-NoSecretImport` 或 `--no-secret-import`，然后在启动 Codex 前自行设置 `OBSIDIAN_LOCAL_REST_API_KEY`。
 
 ## Use the Skill
@@ -149,6 +155,12 @@ Windows 和 macOS 脚本都遵守 `CODEX_HOME`；macOS 默认还会为 GUI/新 z
 
 ```text
 将本次代码对话进行知识总结沉淀，先给我预览，不要立即写入。
+```
+
+小改动可以指定：
+
+```text
+使用 code-knowledge-capture 的 compact 模式沉淀本次修复，先预览。
 ```
 
 检查预览中的项目、功能、状态、目标路径、学习目标、前置知识、术语、架构心智模型、端到端流程、决策权衡、验证边界、自测练习和不确定项。确认后再说：
@@ -164,6 +176,7 @@ Windows 和 macOS 脚本都遵守 `CODEX_HOME`；macOS 默认还会为 GUI/新 z
 | Path | Purpose |
 |---|---|
 | `.agents/plugins/marketplace.json` | 仓库级 Codex marketplace，自动暴露本插件 |
+| `scripts/build-plugin-package.*` | 生成 marketplace 使用的标准插件分发目录 |
 | `AGENTS.md` | 告诉 Codex 如何进行首次检测、确认和跨平台初始化 |
 | `docs/getting-started.md` | 从 `git clone` 到首次使用的完整上手流程 |
 | `skills/code-knowledge-capture/` | 面向初学者的 Codex 知识提炼 Skill、教学规则和审核策略 |
@@ -174,9 +187,15 @@ Windows 和 macOS 脚本都遵守 `CODEX_HOME`；macOS 默认还会为 GUI/新 z
 | `scripts/install-plugin.ps1` / `scripts/install-plugin.sh` | 由 Codex 执行的本仓库插件安装入口 |
 | `scripts/install.ps1` | 已安装插件时的 Windows 连接配置脚本 |
 | `scripts/doctor.ps1` / `scripts/doctor.sh` | 检查插件、endpoint、环境变量和 MCP 配置 |
+| `scripts/rotate-key.*` / `disconnect.*` / `uninstall.*` | 密钥轮换、断开连接和保留笔记的卸载流程 |
 | `scripts/scan-sensitive-content.ps1` | 写入前扫描候选 Markdown 中的凭据和敏感内容 |
+| `scripts/new-evidence-identity.*` | 规范化脱敏证据清单，并生成稳定的 SHA-256 与 capture ID |
 | `scripts/validate-note-path.ps1` | 校验 Vault 内的 noteRoot、项目 ID 和功能 ID |
 | `tests/` 和 `.github/workflows/ci.yml` | Windows/macOS 仓库验证和持续集成 |
+| `tests/skill-evals/` | 代表性 Skill 行为用例和结构化输出契约 |
+| `PRIVACY.md` | 数据流、保留、删除和第三方边界 |
+| `docs/platform-support.md` | 支持平台和远程环境限制 |
+| `docs/demo.md` | 预览优先的示例交互 |
 | `docs/workflow.md` | 从对话到知识沉淀的完整流程 |
 | `docs/development.md` | 如何扩展 Skill、模板和脚本 |
 | `docs/security.md` | 凭据、HTTP fallback 和写入边界 |
@@ -188,6 +207,26 @@ Windows 和 macOS 脚本都遵守 `CODEX_HOME`；macOS 默认还会为 GUI/新 z
 项目和功能目录使用安全 slug；写入前必须验证完整目标路径，并通过敏感内容扫描。扫描失败会阻止写入，不会只作为提示继续执行。
 
 本项目只负责 Codex Skill、模板和连接配置；它不上传对话，不托管 Obsidian Vault，也不提供远程服务器。
+
+完整的数据处理和删除说明见 [PRIVACY.md](PRIVACY.md)。非敏感问题可通过仓库 Issues 反馈；漏洞请使用 GitHub Security Advisories，不要在公开报告中附带 key 或 Vault 内容。
+
+## Connection lifecycle
+
+以下命令都要求再次确认，并且不会删除知识笔记：
+
+```powershell
+.\scripts\rotate-key.ps1 -VaultPath 'C:\path\to\your\vault' -Approve
+.\scripts\disconnect.ps1 -VaultPath 'C:\path\to\your\vault' -Approve
+.\scripts\uninstall.ps1 -VaultPath 'C:\path\to\your\vault' -Approve
+```
+
+```bash
+bash ./scripts/rotate-key.sh --vault '/Users/you/Obsidian/MyVault' --approve
+bash ./scripts/disconnect.sh --vault '/Users/you/Obsidian/MyVault' --approve
+bash ./scripts/uninstall.sh --vault '/Users/you/Obsidian/MyVault' --approve
+```
+
+`disconnect` 保留第三方插件和集成设置，只移除 Codex 连接并关闭 HTTP fallback；`uninstall` 移除选定 Vault 的第三方插件文件和集成设置，但保留 Markdown 知识笔记。
 
 ## License
 

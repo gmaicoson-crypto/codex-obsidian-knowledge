@@ -1,0 +1,37 @@
+name: upstream-watch
+
+on:
+  schedule:
+    - cron: '17 8 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check-local-rest-api:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Re-download and verify pinned assets
+        shell: bash
+        run: bash tests/upstream-assets-validation.sh
+      - name: Open an issue when a newer upstream release exists
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: pwsh
+        run: |
+          $metadata = Get-Content -LiteralPath './scripts/upstream-assets.json' -Raw -Encoding UTF8 | ConvertFrom-Json
+          $latest = gh api repos/coddingtonbear/obsidian-local-rest-api/releases/latest --jq .tag_name
+          $latest = ([string]$latest).TrimStart('v')
+          if ($latest -eq [string]$metadata.version) {
+            Write-Output "Pinned upstream version is current: $latest"
+            exit 0
+          }
+          $title = "Review Local REST API $latest"
+          $existing = gh issue list --state open --search "Review Local REST API $latest in:title" --json number --jq 'length'
+          if ([int]$existing -eq 0) {
+            $body = "A newer Local REST API release is available. Review its manifest, minimum Obsidian version, behavior, and all downloaded assets before updating pinned SHA-256 values. Do not update hashes automatically.`n`nCurrent: $($metadata.version)`nLatest: $latest"
+            gh issue create --title $title --body $body
+          }

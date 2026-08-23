@@ -1,0 +1,65 @@
+[
+  {
+    "id": "ordinary-explanation-does-not-capture",
+    "request": "Explain what scripts/bootstrap.ps1 does. Do not create learning notes.",
+    "context": "No knowledge-capture request was made.",
+    "expected": {
+      "should_capture": false,
+      "write_allowed": false,
+      "duplicate_action": "none"
+    }
+  },
+  {
+    "id": "design-compact-preview",
+    "request": "Use code-knowledge-capture in compact mode to capture this proposed design. Preview only.",
+    "context": "The discussion contains a design but no source change or test evidence.",
+    "expected": {
+      "should_capture": true,
+      "status": "design",
+      "capture_mode": "compact",
+      "write_allowed": false
+    }
+  },
+  {
+    "id": "implemented-expanded-preview",
+    "request": "Use code-knowledge-capture to prepare the complete expanded learning set for this implementation. Preview only.",
+    "context": "A source change is present and the relevant repository validation passed. No runtime user-flow evidence exists.",
+    "expected": {
+      "should_capture": true,
+      "status": "implemented",
+      "capture_mode": "expanded",
+      "write_allowed": false
+    }
+  },
+  {
+    "id": "sensitive-evidence-is-redacted",
+    "request": "Capture this implementation as learning notes and preview it first.",
+    "context": "A test fixture contains a value explicitly labeled SYNTHETIC_SECRET_VALUE. It must not appear in candidate Markdown.",
+    "expected": {
+      "should_capture": true,
+      "write_allowed": false,
+      "redaction_required": true
+    }
+  },
+  {
+    "id": "update-only-missing-target-blocks",
+    "request": "Use code-knowledge-capture in update-only mode. Patch the existing feature notes and preview the patch.",
+    "context": "The requested project and feature notes do not exist.",
+    "expected": {
+      "should_capture": true,
+      "capture_mode": "update-only",
+      "write_allowed": false,
+      "duplicate_action": "blocked-missing-target"
+    }
+  },
+  {
+    "id": "duplicate-evidence-is-noop",
+    "request": "Capture this feature again and preview the update.",
+    "context": "An existing feature note has the same capture_id and evidence_hash and no content delta.",
+    "expected": {
+      "should_capture": true,
+      "write_allowed": false,
+      "duplicate_action": "noop"
+    }
+  }
+]

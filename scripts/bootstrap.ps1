@@ -348,9 +348,11 @@ function Install-LocalRestApi([string]$Vault, [bool]$EnableInsecureServer, [stri
             if ($pluginData.psobject.Properties.Name -contains 'apiKey') { $pluginData.apiKey = $apiKey }
             else { $pluginData | Add-Member -MemberType NoteProperty -Name apiKey -Value $apiKey }
         }
-        if ($EnableInsecureServer) {
-            if ($pluginData.psobject.Properties.Name -contains 'enableInsecureServer') { $pluginData.enableInsecureServer = $true }
-            else { $pluginData | Add-Member -MemberType NoteProperty -Name enableInsecureServer -Value $true }
+        if ($pluginData.psobject.Properties.Name -contains 'enableInsecureServer') {
+            $pluginData.enableInsecureServer = $EnableInsecureServer
+        }
+        else {
+            $pluginData | Add-Member -MemberType NoteProperty -Name enableInsecureServer -Value $EnableInsecureServer
         }
         Write-Utf8Json $stagingDataPath $pluginData
 
