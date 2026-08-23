@@ -49,7 +49,7 @@ const path = ObjC.unwrap($.NSProcessInfo.processInfo.environment.objectForKey('J
 const field = ObjC.unwrap($.NSProcessInfo.processInfo.environment.objectForKey('JSON_FIELD'));
   const raw = ObjC.unwrap($.NSString.stringWithContentsOfFileEncodingError(path, $.NSUTF8StringEncoding, null));
   const data = JSON.parse(raw.replace(/^\uFEFF/, ''));
-if (data[field] !== undefined && data[field] !== null) console.log(String(data[field]));
+data[field] !== undefined && data[field] !== null ? String(data[field]) : '';
 JXA
 }
 plugin_name="$(json_field "$manifest_path" name)"

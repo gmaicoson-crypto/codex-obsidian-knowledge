@@ -138,9 +138,11 @@ Assert-True ($bootstrapShell -match 'data\.enableInsecureServer = enableInsecure
 Assert-True ($bootstrapShell -match '\[\[ "\$NOTE_ROOT" != /\* \]\]') 'bootstrap.sh must reject absolute NoteRoot values before trimming them.'
 
 $unsupportedJxaGetenv = '$.' + 'getenv('
+$unsupportedJxaConsole = 'console.' + 'log('
 foreach ($shellPath in @(Get-ChildItem -LiteralPath (Join-Path $repoRoot 'scripts') -Filter '*.sh' -File) + @(Get-ChildItem -LiteralPath (Join-Path $repoRoot 'tests') -Filter '*.sh' -File)) {
     $shellSource = Get-Content -LiteralPath $shellPath.FullName -Raw -Encoding UTF8
     Assert-True (-not $shellSource.Contains($unsupportedJxaGetenv)) "$($shellPath.Name) must use NSProcessInfo.environment instead of the unavailable JXA getenv helper."
+    Assert-True (-not $shellSource.Contains($unsupportedJxaConsole)) "$($shellPath.Name) must return JXA values to osascript stdout instead of logging them."
 }
 
 $installShell = Get-Content -LiteralPath (Join-Path $repoRoot 'scripts\install-plugin.sh') -Raw -Encoding UTF8

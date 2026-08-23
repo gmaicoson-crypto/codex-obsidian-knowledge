@@ -12,7 +12,7 @@ const jsonPath = ObjC.unwrap($.NSProcessInfo.processInfo.environment.objectForKe
 const raw = ObjC.unwrap($.NSString.stringWithContentsOfFileEncodingError(jsonPath, $.NSUTF8StringEncoding, null));
 const data = JSON.parse(raw.replace(/^\uFEFF/, ''));
 const jsonField = ObjC.unwrap($.NSProcessInfo.processInfo.environment.objectForKey('JSON_FIELD'));
-console.log(String(data[jsonField]));
+String(data[jsonField]);
 JXA
 }
 

@@ -35,7 +35,7 @@ PLUGIN_ID="$(METADATA_PATH="$SCRIPT_DIR/upstream-assets.json" osascript -l JavaS
 ObjC.import('Foundation');
 const path = ObjC.unwrap($.NSProcessInfo.processInfo.environment.objectForKey('METADATA_PATH'));
 const raw = ObjC.unwrap($.NSString.stringWithContentsOfFileEncodingError(path, $.NSUTF8StringEncoding, null));
-console.log(String(JSON.parse(raw.replace(/^\uFEFF/, '')).pluginId));
+String(JSON.parse(raw.replace(/^\uFEFF/, '')).pluginId);
 JXA
 )"
 PLUGIN_DIR="$VAULT_PATH/.obsidian/plugins/$PLUGIN_ID"
@@ -72,7 +72,7 @@ const path = ObjC.unwrap($.NSProcessInfo.processInfo.environment.objectForKey('J
 const field = ObjC.unwrap($.NSProcessInfo.processInfo.environment.objectForKey('JSON_FIELD'));
 const raw = ObjC.unwrap($.NSString.stringWithContentsOfFileEncodingError(path, $.NSUTF8StringEncoding, null));
 const data = JSON.parse(raw.replace(/^\uFEFF/, ''));
-if (data[field] !== undefined && data[field] !== null) console.log(String(data[field]));
+data[field] !== undefined && data[field] !== null ? String(data[field]) : '';
 JXA
 }
 

@@ -37,7 +37,7 @@ ObjC.import('Foundation');
 const path = ObjC.unwrap($.NSProcessInfo.processInfo.environment.objectForKey('METADATA_PATH'));
   const raw = ObjC.unwrap($.NSString.stringWithContentsOfFileEncodingError(path, $.NSUTF8StringEncoding, null));
   const data = JSON.parse(raw.replace(/^\uFEFF/, ''));
-console.log(data.pluginId); console.log(data.version);
+[data.pluginId, data.version].join('\n');
 JXA
 )"; then check 'Asset metadata' 0 'Could not parse upstream-assets.json'; return; fi
   PLUGIN_ID="$(printf '%s\n' "$lines" | sed -n '1p')"
@@ -53,7 +53,7 @@ const path = ObjC.unwrap($.NSProcessInfo.processInfo.environment.objectForKey('J
 const field = ObjC.unwrap($.NSProcessInfo.processInfo.environment.objectForKey('JSON_FIELD'));
   const raw = ObjC.unwrap($.NSString.stringWithContentsOfFileEncodingError(path, $.NSUTF8StringEncoding, null));
   const data = JSON.parse(raw.replace(/^\uFEFF/, ''));
-if (data[field] !== undefined && data[field] !== null) console.log(String(data[field]));
+data[field] !== undefined && data[field] !== null ? String(data[field]) : '';
 JXA
 }
 
@@ -250,7 +250,7 @@ const raw = ObjC.unwrap($.NSProcessInfo.processInfo.environment.objectForKey('MC
   const candidate = line ? line.replace(/^\s*data:\s*/, '') : raw.trim();
 const data = JSON.parse(candidate);
 if (data.error || !data.result || !data.result.serverInfo || !data.result.serverInfo.name) throw new Error('invalid initialize response');
-console.log(String(data.result.serverInfo.name));
+String(data.result.serverInfo.name);
 JXA
 }
 

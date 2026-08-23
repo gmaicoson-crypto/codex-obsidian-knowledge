@@ -11,7 +11,7 @@ plugin_name="$(MANIFEST_PATH="$repo_root/.codex-plugin/plugin.json" osascript -l
 ObjC.import('Foundation');
 const manifestPath = ObjC.unwrap($.NSProcessInfo.processInfo.environment.objectForKey('MANIFEST_PATH'));
 const raw = ObjC.unwrap($.NSString.stringWithContentsOfFileEncodingError(manifestPath, $.NSUTF8StringEncoding, null));
-console.log(String(JSON.parse(raw.replace(/^\uFEFF/, '')).name));
+String(JSON.parse(raw.replace(/^\uFEFF/, '')).name);
 JXA
 )"
 [[ "$plugin_name" =~ ^[A-Za-z0-9_-]+(\.[A-Za-z0-9_-]+)*$ ]] || { echo "Invalid plugin name in manifest: $plugin_name" >&2; exit 1; }

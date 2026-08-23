@@ -59,10 +59,9 @@ ObjC.import('Foundation');
 const path = ObjC.unwrap($.NSProcessInfo.processInfo.environment.objectForKey('METADATA_PATH'));
 const raw = ObjC.unwrap($.NSString.stringWithContentsOfFileEncodingError(path, $.NSUTF8StringEncoding, null));
 const data = JSON.parse(raw.replace(/^\uFEFF/, ''));
-console.log(data.pluginId);
-console.log(data.version);
-console.log(data.releaseBase);
-for (const name of ['main.js', 'manifest.json', 'styles.css']) console.log(name + '\t' + data.assets[name]);
+const lines = [data.pluginId, data.version, data.releaseBase];
+for (const name of ['main.js', 'manifest.json', 'styles.css']) lines.push(name + '\t' + data.assets[name]);
+lines.join('\n');
 JXA
 )" || die "Could not parse upstream asset metadata."
   PLUGIN_ID="$(printf '%s\n' "$lines" | sed -n '1p')"
@@ -107,7 +106,7 @@ ObjC.import('Foundation');
 const path = ObjC.unwrap($.NSProcessInfo.processInfo.environment.objectForKey('OBSIDIAN_CONFIG_PATH'));
 const raw = ObjC.unwrap($.NSString.stringWithContentsOfFileEncodingError(path, $.NSUTF8StringEncoding, null));
 const data = JSON.parse(raw.replace(/^\uFEFF/, ''));
-for (const entry of Object.values(data.vaults || {})) if (entry.path) console.log((entry.open ? '1' : '0') + '\t' + entry.path);
+Object.values(data.vaults || {}).filter((entry) => entry.path).map((entry) => (entry.open ? '1' : '0') + '\t' + entry.path).join('\n');
 JXA
 }
 
@@ -148,7 +147,7 @@ const path = ObjC.unwrap($.NSProcessInfo.processInfo.environment.objectForKey('J
 const field = ObjC.unwrap($.NSProcessInfo.processInfo.environment.objectForKey('JSON_FIELD'));
 const raw = ObjC.unwrap($.NSString.stringWithContentsOfFileEncodingError(path, $.NSUTF8StringEncoding, null));
 const data = JSON.parse(raw.replace(/^\uFEFF/, ''));
-if (data[field] !== undefined && data[field] !== null) console.log(String(data[field]));
+data[field] !== undefined && data[field] !== null ? String(data[field]) : '';
 JXA
 }
 

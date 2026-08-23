@@ -16,8 +16,11 @@ import sys
 
 root = pathlib.Path(sys.argv[1])
 unsupported_jxa_getenv = "$." + "getenv("
+unsupported_jxa_console = "console." + "log("
 for path in (*sorted((root / "scripts").glob("*.sh")), *sorted((root / "tests").glob("*.sh"))):
-    assert unsupported_jxa_getenv not in path.read_text(encoding="utf-8"), path
+    shell_source = path.read_text(encoding="utf-8")
+    assert unsupported_jxa_getenv not in shell_source, path
+    assert unsupported_jxa_console not in shell_source, path
 
 metadata = json.loads((root / "scripts" / "upstream-assets.json").read_text(encoding="utf-8"))
 assert metadata["pluginId"] == "obsidian-local-rest-api"
