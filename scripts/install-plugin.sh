@@ -67,6 +67,7 @@ cache_path="$user_codex_root/plugins/cache/$marketplace_name/$plugin_name/local"
 
 if ! plugins="$(codex plugin list 2>&1)"; then
   printf '%s\n' 'Could not inspect installed Codex plugins. No files or configuration were changed.' >&2
+  printf '%s\n' "$plugins" >&2
   exit 1
 fi
 plugin_already_installed=0
@@ -78,6 +79,7 @@ fi
 
 if ! marketplaces="$(codex plugin marketplace list 2>&1)"; then
   printf '%s\n' 'Could not inspect configured Codex marketplaces. No files or configuration were changed.' >&2
+  printf '%s\n' "$marketplaces" >&2
   exit 1
 fi
 marketplace_added_by_this_run=0

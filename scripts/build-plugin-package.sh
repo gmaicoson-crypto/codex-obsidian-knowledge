@@ -29,7 +29,11 @@ fi
 mkdir -p "$packages_root"
 staging_root="$(mktemp -d "$packages_root/.staging.XXXXXX")"
 backup_root="$packages_root/.backup.$RANDOM.$RANDOM"
-cleanup() { [[ -d "$staging_root" ]] && rm -rf -- "$staging_root"; }
+cleanup() {
+  if [[ -d "$staging_root" ]]; then
+    rm -rf -- "$staging_root"
+  fi
+}
 trap cleanup EXIT
 for directory in .codex-plugin assets skills templates scripts docs; do cp -R "$repo_root/$directory" "$staging_root/$directory"; done
 for file in README.md PRIVACY.md SECURITY.md LICENSE CHANGELOG.md; do cp "$repo_root/$file" "$staging_root/$file"; done

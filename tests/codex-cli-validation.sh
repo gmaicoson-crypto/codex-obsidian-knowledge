@@ -36,8 +36,9 @@ cleanup() {
 trap cleanup EXIT
 export CODEX_HOME="$temporary_codex_home"
 
-if ! bash "$repo_root/scripts/install-plugin.sh" --approve >/dev/null; then
+if ! install_output="$(bash "$repo_root/scripts/install-plugin.sh" --approve 2>&1)"; then
   echo 'Initial plugin installation failed in the isolated Codex Home.' >&2
+  printf '%s\n' "$install_output" >&2
   exit 1
 fi
 if ! plugins="$(codex plugin list --marketplace "$marketplace_name" 2>&1)"; then
@@ -50,8 +51,9 @@ if ! printf '%s\n' "$plugins" | awk -v selector="$selector" '$1 == selector && $
   printf '%s\n' "$plugins" >&2
   exit 1
 fi
-if ! bash "$repo_root/scripts/install-plugin.sh" --approve >/dev/null; then
+if ! install_output="$(bash "$repo_root/scripts/install-plugin.sh" --approve 2>&1)"; then
   echo 'Plugin installer was not idempotent in the isolated Codex Home.' >&2
+  printf '%s\n' "$install_output" >&2
   exit 1
 fi
 if ! remove_output="$(codex plugin remove "$selector" 2>&1)"; then
