@@ -252,3 +252,4 @@ finally {
 }
 
 Write-Output 'Repository validation passed.'
+exit 0
