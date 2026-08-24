@@ -22,9 +22,9 @@
     "privacyPolicyURL": "https://github.com/gmaicoson-crypto/codex-obsidian-knowledge/blob/main/PRIVACY.md",
     "termsOfServiceURL": "https://github.com/gmaicoson-crypto/codex-obsidian-knowledge/blob/main/LICENSE",
     "brandColor": "#6C63FF",
-    "composerIcon": "./assets/icon.svg",
-    "logo": "./assets/logo.svg",
-    "logoDark": "./assets/logo-dark.svg",
+    "composerIcon": "./assets/preview.png",
+    "logo": "./assets/preview.png",
+    "logoDark": "./assets/preview.png",
     "screenshots": ["./assets/demo.png"],
     "defaultPrompt": [
       "Use code-knowledge-capture to preview this coding work in compact or expanded learning-note mode before writing it to Obsidian."
