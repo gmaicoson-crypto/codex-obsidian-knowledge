@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Added a deep-exploration contract for expanded captures: causal mechanism
+  chains, evidence-to-claim boundaries, counterfactual or failure paths,
+  transfer conditions, and a preview depth audit. Strengthened schemas,
+  templates, documentation, and behavior checks so summaries cannot pass by
+  merely listing terms, files, or conclusions.
+
 ## 0.3.0 - 2026-08-23
 
 - Refocused the plugin on beginning programmers who use Codex to write code,

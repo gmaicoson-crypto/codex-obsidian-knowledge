@@ -19,12 +19,23 @@ Fold the verification boundary and one reusable lesson into the feature
 overview. Omit empty roadmap and architecture documents. Set
 `detail_level: compact` and `capture_mode: compact`.
 
+Compact changes the document set, not the truth standard. The retained feature
+overview still needs one mechanism explanation, one relevant failure or
+boundary, and one evidence limitation. It may omit the full deep audit only
+when the user explicitly chooses compact mode; do not silently make an
+expanded capture shallow.
+
 ## `expanded`
 
 Use for substantial implementation, debugging, cross-module behavior, or when
 the user asks for the complete learning set. Use the canonical project notes
 and all six feature notes, but do not invent content to fill empty sections.
 Set `detail_level: expanded` and `capture_mode: expanded`.
+
+Expanded mode also requires the depth audit in
+[deep-exploration-guide.md](deep-exploration-guide.md). The audit covers
+mechanism, evidence, counterfactual/failure, boundary, and transfer condition;
+it is not satisfied by adding more prose or repeating the call chain.
 
 ## `architecture-only`
 

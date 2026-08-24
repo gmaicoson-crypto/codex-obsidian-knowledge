@@ -74,22 +74,31 @@ $knowledgeApplication = Get-Content -LiteralPath (Join-Path $repoRoot 'templates
 $iterationRoadmap = Get-Content -LiteralPath (Join-Path $repoRoot 'templates\iteration-roadmap.md') -Raw -Encoding UTF8
 $sourceIndex = Get-Content -LiteralPath (Join-Path $repoRoot 'templates\source-index.md') -Raw -Encoding UTF8
 Assert-True ($featureOverview -match '学习目标与前置知识' -and $featureOverview -match '功能心智模型' -and $featureOverview -match '主要决策与权衡') 'feature-overview.md is missing learning goals, a mental model, or decision evidence.'
+Assert-True ($featureOverview -match '深度探究结论' -and $featureOverview -match '关键问题与机制回答' -and $featureOverview -match '深度探究审计') 'feature-overview.md is missing the causal explanation or depth audit.'
 Assert-True ($implementationDetails -match '端到端代码导读' -and $implementationDetails -match '输入从哪里来' -and $implementationDetails -match '关键语法/API' -and $implementationDetails -match '失败信号') 'implementation-details.md is missing the guided code-reading contract.'
+Assert-True ($implementationDetails -match '机制拆解' -and $implementationDetails -match '反事实、边界与失败路径' -and $implementationDetails -match '反事实/边界') 'implementation-details.md is missing mechanism and counterfactual analysis.'
 Assert-True ($implementationEffect -match '不同证据能证明什么' -and $implementationEffect -match '已知验证边界' -and $implementationEffect -match '回归、性能与运行影响') 'implementation-effect.md is missing evidence teaching or verification boundaries.'
+Assert-True ($implementationEffect -match '证据如何支持结论' -and $implementationEffect -match '关键假设与反例') 'implementation-effect.md is missing claim-to-evidence or counterexample analysis.'
 Assert-True ($knowledgeApplication -match '本功能关键术语' -and $knowledgeApplication -match '用自己的话检验理解' -and $knowledgeApplication -match '动手练习' -and $knowledgeApplication -match '预期观察/答案') 'knowledge-application.md is missing vocabulary, self-checks, or exercises.'
+Assert-True ($knowledgeApplication -match '机制推导' -and $knowledgeApplication -match '反例或失败信号' -and $knowledgeApplication -match '深度探究复盘') 'knowledge-application.md is missing reusable mechanism and boundary analysis.'
 Assert-True ($iterationRoadmap -match '为什么现在做' -and $iterationRoadmap -match '验收标准') 'iteration-roadmap.md is missing prioritization fields.'
 Assert-True ($sourceIndex -match '证据台账' -and $sourceIndex -match '它不能证明什么') 'source-index.md is missing evidence boundaries.'
 
 $learningGuidePath = Join-Path $repoRoot 'skills\code-knowledge-capture\references\beginner-learning-guide.md'
 $captureModesPath = Join-Path $repoRoot 'skills\code-knowledge-capture\references\capture-modes.md'
+$deepExplorationPath = Join-Path $repoRoot 'skills\code-knowledge-capture\references\deep-exploration-guide.md'
 Assert-True (Test-Path -LiteralPath $learningGuidePath -PathType Leaf) 'The beginner learning guide is missing.'
 Assert-True (Test-Path -LiteralPath $captureModesPath -PathType Leaf) 'The capture modes reference is missing.'
+Assert-True (Test-Path -LiteralPath $deepExplorationPath -PathType Leaf) 'The deep exploration guide is missing.'
 $skillContent = Get-Content -LiteralPath (Join-Path $repoRoot 'skills\code-knowledge-capture\SKILL.md') -Raw -Encoding UTF8
 $learningGuide = Get-Content -LiteralPath $learningGuidePath -Raw -Encoding UTF8
+$deepExplorationGuide = Get-Content -LiteralPath $deepExplorationPath -Raw -Encoding UTF8
 $skillUiMetadata = Get-Content -LiteralPath (Join-Path $repoRoot 'skills\code-knowledge-capture\agents\openai.yaml') -Raw -Encoding UTF8
 Assert-True ($skillContent -match 'beginner-learning-guide\.md' -and $skillContent -match 'audience:\s*beginner-programmer') 'SKILL.md does not route to the beginner learning guide or set the default audience.'
 Assert-True ($skillContent -match 'capture-modes\.md' -and $skillContent -match 'evidence_hash' -and $skillContent -match 'capture_id') 'SKILL.md does not route capture modes or enforce capture identity.'
 Assert-True ($learningGuide -match 'Two-layer explanations' -and $learningGuide -match 'Architecture for beginners' -and $learningGuide -match 'Self-checks and exercises') 'The beginner learning guide is missing a required teaching layer.'
+Assert-True ($skillContent -match 'deep-exploration-guide\.md' -and $skillContent -match '深度探究审计') 'SKILL.md does not enforce the deep exploration audit.'
+Assert-True ($deepExplorationGuide -match '六遍探究流程' -and $deepExplorationGuide -match '反事实' -and $deepExplorationGuide -match '证据不足') 'The deep exploration guide is missing mechanism, counterfactual, or evidence-gap guidance.'
 Assert-True ($skillUiMetadata -match 'short_description:\s*"[^"]*beginner-friendly[^"]*"') 'agents/openai.yaml does not describe the beginner-friendly learning workflow.'
 Assert-True ($skillUiMetadata -match 'default_prompt:\s*"Use \$code-knowledge-capture\b') 'agents/openai.yaml default_prompt must explicitly invoke $code-knowledge-capture.'
 Assert-True ($skillUiMetadata -match 'icon_small:' -and $skillUiMetadata -match 'icon_large:' -and $skillUiMetadata -match 'brand_color:') 'agents/openai.yaml is missing visual metadata.'

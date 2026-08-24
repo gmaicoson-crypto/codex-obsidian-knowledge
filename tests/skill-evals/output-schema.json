@@ -10,6 +10,7 @@
     "write_allowed",
     "redaction_required",
     "duplicate_action",
+    "depth_required",
     "reason"
   ],
   "properties": {
@@ -20,6 +21,7 @@
     "write_allowed": { "type": "boolean" },
     "redaction_required": { "type": "boolean" },
     "duplicate_action": { "enum": ["none", "create", "patch", "noop", "blocked-missing-target"] },
+    "depth_required": { "type": "boolean" },
     "reason": { "type": "string" }
   }
 }

@@ -10,9 +10,12 @@ The repository has two evaluation layers:
    quota and depends on the caller's authenticated Codex environment.
 
 The suite covers non-triggering ordinary explanations, design-only status,
-verification-boundary status classification, redaction, missing update-only targets, and
-idempotent duplicate evidence. Add a case when a demonstrated behavioral
-failure cannot be protected by deterministic script tests alone.
+verification-boundary status classification, redaction, missing update-only targets,
+idempotent duplicate evidence, and the expanded-mode depth audit. The depth case
+checks that a summary request is recognized as requiring mechanism, evidence
+boundaries, counterfactual/failure analysis, and transfer conditions rather than
+just a list of terms or files. Add a case when a demonstrated behavioral failure
+cannot be protected by deterministic script tests alone.
 
 Live evaluation never configures Obsidian or approves writes. Review failures
 as decision regressions; do not weaken an expectation solely to make a model

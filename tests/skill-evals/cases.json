@@ -6,6 +6,7 @@
     "expected": {
       "should_capture": false,
       "write_allowed": false,
+      "depth_required": false,
       "duplicate_action": "none"
     }
   },
@@ -17,7 +18,8 @@
       "should_capture": true,
       "status": "design",
       "capture_mode": "compact",
-      "write_allowed": false
+      "write_allowed": false,
+      "depth_required": false
     }
   },
   {
@@ -28,7 +30,8 @@
       "should_capture": true,
       "status": "implemented",
       "capture_mode": "expanded",
-      "write_allowed": false
+      "write_allowed": false,
+      "depth_required": true
     }
   },
   {
@@ -38,7 +41,8 @@
     "expected": {
       "should_capture": true,
       "write_allowed": false,
-      "redaction_required": true
+      "redaction_required": true,
+      "depth_required": true
     }
   },
   {
@@ -49,6 +53,7 @@
       "should_capture": true,
       "capture_mode": "update-only",
       "write_allowed": false,
+      "depth_required": false,
       "duplicate_action": "blocked-missing-target"
     }
   },
@@ -59,7 +64,21 @@
     "expected": {
       "should_capture": true,
       "write_allowed": false,
+      "depth_required": true,
       "duplicate_action": "noop"
+    }
+  },
+  {
+    "id": "expanded-depth-audit",
+    "request": "Use code-knowledge-capture in expanded mode to prepare a preview. Do not merely list the changed files or mention terms; deeply investigate the mechanism, evidence boundaries, counterfactual or failure path, and when the lesson transfers.",
+    "context": "A source change and passing repository checks exist, but the draft summary currently only names the entry point, two terms, and the test command. No runtime user-flow evidence exists.",
+    "expected": {
+      "should_capture": true,
+      "status": "implemented",
+      "capture_mode": "expanded",
+      "write_allowed": false,
+      "depth_required": true,
+      "duplicate_action": "create"
     }
   }
 ]

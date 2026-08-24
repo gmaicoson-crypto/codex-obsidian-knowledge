@@ -27,12 +27,17 @@ $requiredIds = @(
     'implemented-expanded-preview',
     'sensitive-evidence-is-redacted',
     'update-only-missing-target-blocks',
-    'duplicate-evidence-is-noop'
+    'duplicate-evidence-is-noop',
+    'expanded-depth-audit'
 )
 foreach ($id in $requiredIds) { if (-not $ids.ContainsKey($id)) { throw "Missing required behavior case: $id" } }
 $implementedCase = $cases | Where-Object { $_.id -eq 'implemented-expanded-preview' } | Select-Object -First 1
 if ([string]$implementedCase.expected.status -ne 'implemented') {
     throw 'Passing automated validation without runtime user-flow evidence must remain implemented, not verified.'
+}
+$depthCase = $cases | Where-Object { $_.id -eq 'expanded-depth-audit' } | Select-Object -First 1
+if (-not [bool]$depthCase.expected.depth_required) {
+    throw 'Expanded depth audit case must require deep exploration.'
 }
 if ($schema.type -ne 'object' -or [bool]$schema.additionalProperties) { throw 'Skill eval output schema must be a closed object.' }
 Write-Output 'Skill behavior case validation passed.'

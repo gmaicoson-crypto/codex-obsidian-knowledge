@@ -81,7 +81,13 @@ When the repository helpers are available, use
 Record `source_commit` when Git provides it and set `verified_at` only when the
 verification status is `verified`. Read
 [beginner-learning-guide.md](references/beginner-learning-guide.md) when
-creating explanations and learning checks, and
+creating explanations and learning checks. Read
+[deep-exploration-guide.md](references/deep-exploration-guide.md) when the
+capture mode is `expanded` (the default), the user asks for a deep/in-depth
+summary, or the evidence contains a non-trivial mechanism, failure mode, or
+design trade-off. The deep-exploration guide is the completeness gate: do not
+equate a populated template, a glossary, or a file list with understanding.
+Read
 [review-policy.md](references/review-policy.md) when deciding whether an update
 needs confirmation or how to handle sensitive evidence.
 
@@ -114,6 +120,12 @@ Before drafting, build an evidence map with these buckets:
 | Reuse | What rule, failure mode, debugging method, or anti-pattern transfers elsewhere? |
 | Follow-up | What should happen next, with priority, acceptance criteria, and dependencies? |
 
+For every material conclusion, also answer the depth chain: what is the
+mechanism between input and result, what evidence supports each transition,
+what changes under a relevant counterfactual, where the mechanism fails, and
+when the lesson transfers. A list of terms, files, or conclusions without this
+chain is incomplete even when every template heading has content.
+
 Also build a learning map:
 
 | Learning bucket | Required questions |
@@ -128,8 +140,11 @@ Also build a learning map:
 Use `[事实]`, `[推断]`, `[计划]`, and `[待确认]` when a reader could confuse
 evidence with interpretation or future work. The preview must expose the
 evidence map, reader prerequisites, key terms, at least one end-to-end flow,
-the main decision/trade-off, the verification boundary, and the proposed
-self-checks before any write.
+the main decision/trade-off, the verification boundary, the proposed
+self-checks, and a **深度探究审计** before any write. The audit must map each
+core question to its mechanism, source evidence, counterfactual or failure
+path, evidence boundary, and reuse condition. Mark missing evidence instead of
+filling it with generic explanation.
 
 ## Concrete code examples are required
 

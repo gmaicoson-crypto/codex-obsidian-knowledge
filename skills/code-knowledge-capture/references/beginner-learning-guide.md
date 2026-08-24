@@ -37,6 +37,16 @@ only the relevant construct beside the excerpt. Examples include async/await,
 dependency injection, callbacks, generic types, decorators, shell pipelines,
 or framework lifecycle hooks. Do not create a generic language tutorial.
 
+## Depth of explanation
+
+“通俗理解”只是入口，不是结论。对每个会影响读者判断的概念继续追问：
+它通过哪些中间状态或控制分支产生结果？如果移除或改变关键条件会怎样？
+在什么输入、环境或时序下不成立？哪一条证据支持这个解释？
+
+把回答组织成“现象 → 机制 → 证据 → 反事实/失败 → 迁移条件”。若没有执行
+反事实检查，不要使用“验证了”或“必然”；写 `未验证` 并给出最小安全检查。
+术语表只负责命名，不能替代机制导读；代码导读也不能停在逐行翻译。
+
 ## Vocabulary quality
 
 Each key term entry should contain:

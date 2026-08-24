@@ -63,6 +63,10 @@ Read [capture-modes.md](capture-modes.md) for document selection and mode
 boundaries. The default remains `expanded`. The preview must name the selected
 mode and every note that will be created, patched, or intentionally omitted.
 
+For `expanded` captures, also read [deep-exploration-guide.md](deep-exploration-guide.md).
+It defines the depth gate used below; a populated heading or a longer note is
+not evidence that the concept was understood.
+
 ## Detail standard
 
 “详细” means evidence-dense, not merely long. The summary should explain the
@@ -76,6 +80,30 @@ is not obvious from the section:
 - `[计划]` — proposed follow-up work, not an implemented result.
 - `[待确认]` — an unresolved question or missing evidence.
 
+“深入探究” means that the reader can follow a causal chain and predict a
+nearby case. For every material conclusion, connect:
+
+```text
+现象/输入 → 前置条件 → 中间数据或状态 → 关键机制 → 输出/信号
+```
+
+Then add the evidence for each important transition, one relevant
+counterfactual or failure path, the boundary where the explanation stops, and
+the conditions under which the lesson transfers. If a counterfactual was not
+run, label it `未验证`; do not turn an expected result into a fact. A glossary,
+file list, call-chain list, or conclusion without the mechanism and evidence
+boundary is incomplete.
+
+Use the following depth audit in the preview:
+
+| Core question | Mechanism | Evidence | Counterfactual/failure | Boundary | Transfer condition | Audit status |
+|---|---|---|---|---|---|---|
+
+The audit status is `已展开`, `部分展开（列出缺口）`, or
+`无证据（列出最小验证）`. Missing evidence does not require inventing an
+answer; it requires recording the smallest safe check and what cannot yet be
+claimed.
+
 An expanded feature capture should cover all of the following, using “无证据”
 or “未验证” rather than inventing detail when evidence is absent:
 
@@ -83,15 +111,18 @@ or “未验证” rather than inventing detail when evidence is absent:
    constraints.
 2. **Behavior and structure** — before/after behavior, entry points, call
    chain, data/control flow, state transitions, invariants, and boundaries.
-3. **Decision record** — chosen approach, alternatives considered, trade-offs,
+3. **Mechanism and causality** — why the main transitions produce the observed
+   result, which conditions enable them, and what changes if a key condition is
+   removed or replaced.
+4. **Decision record** — chosen approach, alternatives considered, trade-offs,
    compatibility assumptions, and why the decision fits the evidence.
-4. **Implementation evidence** — changed files, symbols, configuration, and
+5. **Implementation evidence** — changed files, symbols, configuration, and
    1–3 short source excerpts with file and symbol/line metadata.
-5. **Verification** — checks run, exact results when available, runtime scope,
+6. **Verification** — checks run, exact results when available, runtime scope,
    regression signal, artifacts, and explicit unverified boundaries.
-6. **Reusable knowledge** — general rules, failure modes, debugging steps,
+7. **Reusable knowledge** — general rules, failure modes, debugging steps,
    anti-patterns, transfer conditions, and terms.
-7. **Next actions** — prioritized follow-ups with acceptance criteria,
+8. **Next actions** — prioritized follow-ups with acceptance criteria,
    dependencies, risk, and current status.
 
 ## Beginner learning standard
@@ -121,15 +152,20 @@ Minimum completeness checks for an expanded feature summary:
 
 - `00-功能总览.md` contains a concise conclusion, scope/non-goals, status,
   learning goals/prerequisites, a plain-language mental model, evidence map,
-  and open questions.
+  a causal mechanism, 3–7 why/how-if questions (or an explicit evidence
+  limitation for a smaller item), and open questions.
 - `01-实现细节.md` contains at least one end-to-end flow and one decision or
   trade-off; every material change is tied to a file and symbol when known;
-  code examples explain input, processing, output, syntax, and failure signal.
+  code examples explain input, processing, output, syntax, failure signal, and
+  why the highlighted step changes behavior. It also contains one normal path,
+  one error/boundary path, and one counterfactual or alternative.
 - `02-实施效果.md` separates test/build evidence from runtime or user-flow
-  verification and records at least one boundary or “未验证” statement.
+  verification, maps each evidence item to what it does and does not prove,
+  and records at least one boundary or “未验证” statement.
 - `03-知识应用总结.md` contains at least two reusable rules or lessons and
-  says when each one does and does not apply; it also contains self-check
-  questions and safe exercises with expected observations.
+  says when each one does and does not apply, explains the mechanism and a
+  counterexample/failure signal for each, and contains self-check questions
+  and safe exercises with expected observations.
 - `04-后续迭代方向.md` records acceptance criteria for each non-empty item.
 - `99-相关对话与文件.md` acts as an evidence ledger rather than a bare list.
 
@@ -203,8 +239,12 @@ Every code example should carry these fields:
 - `Why it matters`: the connection between the source and the captured knowledge.
 - `Input`: the value/event arriving and where it came from.
 - `Processing`: the important statements and any essential syntax.
+- `Mechanism`: why the processing changes data, control flow, or state and
+  which condition enables it.
 - `Output/side effect`: what leaves or changes and who consumes it next.
 - `Failure signal`: what the reader could observe if this step failed.
+- `Counterfactual/boundary`: what changes if a key statement/condition is
+  removed or altered, and which part is `未验证`.
 
 ## Project overview rule
 

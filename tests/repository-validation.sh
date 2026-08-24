@@ -67,22 +67,33 @@ architecture = (root / "templates" / "architecture-and-terms.md").read_text(enco
 assert all(section in architecture for section in (
     "第一层：系统边界", "第二层：组件地图", "第三层：主流程", "关键术语表"
 ))
+assert "为什么这样分层" in architecture
 
 implementation = (root / "templates" / "implementation-details.md").read_text(encoding="utf-8")
 assert all(section in implementation for section in (
     "端到端代码导读", "输入从哪里来", "关键语法/API", "失败信号"
 ))
+assert all(section in implementation for section in ("机制拆解", "反事实、边界与失败路径", "反事实/边界"))
+
+effect = (root / "templates" / "implementation-effect.md").read_text(encoding="utf-8")
+assert all(section in effect for section in ("证据如何支持结论", "关键假设与反例"))
 
 knowledge = (root / "templates" / "knowledge-application.md").read_text(encoding="utf-8")
 assert all(section in knowledge for section in (
     "本功能关键术语", "用自己的话检验理解", "动手练习", "预期观察/答案"
 ))
+assert all(section in knowledge for section in ("机制推导", "反例或失败信号", "深度探究复盘"))
 
 skill = (root / "skills" / "code-knowledge-capture" / "SKILL.md").read_text(encoding="utf-8")
 guide_path = root / "skills" / "code-knowledge-capture" / "references" / "beginner-learning-guide.md"
+deep_guide_path = root / "skills" / "code-knowledge-capture" / "references" / "deep-exploration-guide.md"
 skill_ui = (root / "skills" / "code-knowledge-capture" / "agents" / "openai.yaml").read_text(encoding="utf-8")
 assert guide_path.is_file()
+assert deep_guide_path.is_file()
 assert "beginner-learning-guide.md" in skill and "audience: beginner-programmer" in skill
+deep_guide = deep_guide_path.read_text(encoding="utf-8")
+assert "deep-exploration-guide.md" in skill and "深度探究审计" in skill
+assert all(section in deep_guide for section in ("六遍探究流程", "反事实", "证据不足"))
 assert "beginner-friendly" in skill_ui
 assert "Use $code-knowledge-capture" in skill_ui
 assert "capture-modes.md" in skill and "capture_id" in skill and "evidence_hash" in skill
@@ -114,6 +125,7 @@ assert {case["id"] for case in cases} >= {
     "sensitive-evidence-is-redacted",
     "update-only-missing-target-blocks",
     "duplicate-evidence-is-noop",
+    "expanded-depth-audit",
 }
 PY
 
