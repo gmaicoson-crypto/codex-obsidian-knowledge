@@ -68,6 +68,10 @@ assert all(section in architecture for section in (
     "第一层：系统边界", "第二层：组件地图", "第三层：主流程", "关键术语表"
 ))
 assert "为什么这样分层" in architecture
+assert "项目主线架构基线" in architecture and "项目范围内的证据" in architecture
+
+project_overview = (root / "templates" / "project-overview.md").read_text(encoding="utf-8")
+assert "项目主线" in project_overview and "features/<feature>" in project_overview
 
 implementation = (root / "templates" / "implementation-details.md").read_text(encoding="utf-8")
 assert all(section in implementation for section in (
@@ -77,14 +81,20 @@ assert all(section in implementation for section in ("机制拆解", "反事实�
 
 effect = (root / "templates" / "implementation-effect.md").read_text(encoding="utf-8")
 assert all(section in effect for section in ("证据如何支持结论", "关键假设与反例"))
+assert "不是测试报告" in effect and "## 验证矩阵" not in effect
 
 knowledge = (root / "templates" / "knowledge-application.md").read_text(encoding="utf-8")
 assert all(section in knowledge for section in (
     "本功能关键术语", "用自己的话检验理解", "动手练习", "预期观察/答案"
 ))
 assert all(section in knowledge for section in ("机制推导", "反例或失败信号", "深度探究复盘"))
+assert "只读代码或已有证据核对" in knowledge
+
+implementation_details = (root / "templates" / "implementation-details.md").read_text(encoding="utf-8")
+assert "测试代码不是必选项" in implementation_details and "知识角色" in implementation_details
 
 skill = (root / "skills" / "code-knowledge-capture" / "SKILL.md").read_text(encoding="utf-8")
+path_policy = (root / "skills" / "code-knowledge-capture" / "references" / "path-policy.md").read_text(encoding="utf-8")
 guide_path = root / "skills" / "code-knowledge-capture" / "references" / "beginner-learning-guide.md"
 deep_guide_path = root / "skills" / "code-knowledge-capture" / "references" / "deep-exploration-guide.md"
 skill_ui = (root / "skills" / "code-knowledge-capture" / "agents" / "openai.yaml").read_text(encoding="utf-8")
@@ -93,6 +103,10 @@ assert deep_guide_path.is_file()
 assert "beginner-learning-guide.md" in skill and "audience: beginner-programmer" in skill
 deep_guide = deep_guide_path.read_text(encoding="utf-8")
 assert "deep-exploration-guide.md" in skill and "深度探究审计" in skill
+assert "Knowledge-first content filter" in skill and "Feature notes are knowledge documents" in skill
+assert "Project baseline and feature scope" in skill and "project-wide evidence" in skill
+assert "direct children of `<project>`" in skill
+assert "Knowledge hierarchy invariant" in path_policy and "direct children of the project ID" in path_policy
 assert all(section in deep_guide for section in ("六遍探究流程", "反事实", "证据不足"))
 assert "beginner-friendly" in skill_ui
 assert "Use $code-knowledge-capture" in skill_ui
@@ -126,7 +140,17 @@ assert {case["id"] for case in cases} >= {
     "update-only-missing-target-blocks",
     "duplicate-evidence-is-noop",
     "expanded-depth-audit",
+    "feature-capture-knowledge-first",
+    "project-baseline-precedes-feature",
 }
+knowledge_case = next(case for case in cases if case["id"] == "feature-capture-knowledge-first")
+assert knowledge_case["expected"]["knowledge_first"] is True
+assert knowledge_case["expected"]["verification_detail"] == "minimal"
+assert knowledge_case["expected"]["raw_test_content"] == "omit-or-reference"
+baseline_case = next(case for case in cases if case["id"] == "project-baseline-precedes-feature")
+assert baseline_case["expected"]["project_baseline_required"] is True
+assert baseline_case["expected"]["project_scope"] == "mainline"
+assert baseline_case["expected"]["feature_scope"] == "branch"
 PY
 
 bash scripts/bootstrap.sh --help >/dev/null

@@ -94,6 +94,30 @@ run, label it `未验证`; do not turn an expected result into a fact. A glossar
 file list, call-chain list, or conclusion without the mechanism and evidence
 boundary is incomplete.
 
+## Feature note content boundary
+
+Feature notes are written for learning and reuse. Separate the evidence gathered
+during capture into three layers:
+
+1. **Knowledge body** — the mental model, mechanism, data/control flow, decision,
+   boundary, terminology, debugging insight, and reusable rule that the reader
+   needs.
+2. **Minimal verification** — a short claim-level statement of what was checked,
+   what it supports, and what remains unverified.
+3. **Provenance** — commands, raw output, build or deployment records, full file
+   inventories, and source links kept for traceability.
+
+Only the first layer should drive the feature narrative. The second layer should
+remain concise and should never be expanded into a test report. The third layer
+belongs in `99-相关对话与文件.md` only when a reader or reviewer needs to follow
+the source. Omit or compress any item that does not explain a mechanism, contract,
+failure boundary, design choice, debugging method, or transferable lesson.
+
+Tests are supporting evidence by default. Include test code or detailed test
+behavior only when it teaches an input contract, an important boundary, a failure
+mode, or a reusable verification technique. Passing tests, builds, or deployments
+must not become the feature's main conclusion.
+
 Use the following depth audit in the preview:
 
 | Core question | Mechanism | Evidence | Counterfactual/failure | Boundary | Transfer condition | Audit status |
@@ -156,16 +180,20 @@ Minimum completeness checks for an expanded feature summary:
   limitation for a smaller item), and open questions.
 - `01-实现细节.md` contains at least one end-to-end flow and one decision or
   trade-off; every material change is tied to a file and symbol when known;
-  code examples explain input, processing, output, syntax, failure signal, and
-  why the highlighted step changes behavior. It also contains one normal path,
-  one error/boundary path, and one counterfactual or alternative.
-- `02-实施效果.md` separates test/build evidence from runtime or user-flow
-  verification, maps each evidence item to what it does and does not prove,
-  and records at least one boundary or “未验证” statement.
+  production code examples explain input, processing, output, syntax, failure
+  signal, and why the highlighted step changes behavior. A test example is
+  optional and must have an explicit learning purpose. It also contains one
+  normal path, one error/boundary path, and one counterfactual or alternative.
+- `02-实施效果.md` is a concise evidence-boundary note, not a test report. It
+  maps each retained evidence item to the knowledge claim it supports and does
+  not support, and records at least one boundary or “未验证” statement. Raw
+  matrices, logs, and command output are omitted or linked from the evidence
+  ledger.
 - `03-知识应用总结.md` contains at least two reusable rules or lessons and
   says when each one does and does not apply, explains the mechanism and a
   counterexample/failure signal for each, and contains self-check questions
-  and safe exercises with expected observations.
+  and safe exercises with expected observations. Adding a test is optional;
+  read-only reasoning and tracing are preferred when they test understanding.
 - `04-后续迭代方向.md` records acceptance criteria for each non-empty item.
 - `99-相关对话与文件.md` acts as an evidence ledger rather than a bare list.
 
@@ -174,6 +202,33 @@ Minimum completeness checks for an expanded feature summary:
 Stable entry point: conclusion, goal, scope/non-goals, current behavior,
 status, key entry points, evidence map, open questions, and risks. Keep it
 readable as an entry point; put deep call-chain detail in `01-实现细节.md`.
+
+## Project baseline and feature scope
+
+The project directory is the mainline knowledge layer. Its two project notes are
+siblings of `features/`, never children of a feature:
+
+```text
+<project>/
+├── 00-项目总览.md
+├── 01-架构与术语.md
+└── features/<feature>/...
+```
+
+Derive the project ID and boundary from repository-wide evidence such as the
+repository root, manifests, workspace structure, entry points, and major
+components. Derive the feature ID from the user's requested learning branch.
+Project notes must be based on a project evidence map; a feature's changed files,
+conversation, or tests alone cannot define the project's architecture, vocabulary,
+or overall status. If the project baseline is missing, create or refresh it before
+using the feature notes as the reader's context, or mark the baseline gap and the
+minimum architecture investigation in the preview.
+
+Project notes contain stable purpose, boundary, architecture, shared terms,
+project-wide risks, and the feature index. Feature notes contain the problem,
+mechanism, decisions, boundaries, and reusable knowledge for one branch. A feature
+capture may propose a stable project-level delta, but the preview must show that
+delta separately from the feature content.
 
 ## Project-level notes
 
@@ -203,10 +258,11 @@ syntax around each excerpt and record facts with paths or symbols.
 
 ## `02-实施效果.md`
 
-Before/after behavior, scenario-based verification, test and build results,
-artifact identifiers, performance or regression signals, screenshots or logs,
-rollout/rollback evidence, and unverified boundaries. Never convert “build
-succeeded” into “user scenario verified.”
+Before/after knowledge-relevant behavior, a concise claim-to-evidence summary,
+important assumptions or counterexamples, and unverified boundaries. This note is
+not a test report: omit raw commands, logs, full matrices, and deployment details
+unless they are necessary to explain or bound a knowledge claim. Never convert
+“build succeeded” into “user scenario verified.”
 
 ## `03-知识应用总结.md`
 
@@ -225,8 +281,9 @@ already-started task.
 
 Source thread IDs, repository paths, reports, artifacts, commits, commands,
 test outputs, and related Obsidian notes. For each important claim, record the
-source type, location, relevance, and confidence. Redact credentials and
-personal data.
+source type, location, relevance, and confidence. Keep this as a compact evidence
+ledger rather than a pasted test/build report. Redact credentials and personal
+data.
 
 ## Code evidence contract
 
@@ -248,6 +305,9 @@ Every code example should carry these fields:
 
 ## Project overview rule
 
-`00-项目总览.md` is a compact index, not a duplicate of every feature note. It should list the project purpose, architecture, feature status matrix, current risks, and links to feature directories.
+`00-项目总览.md` is a compact index, not a duplicate of every feature note. It
+should list the project purpose, architecture, feature status matrix, current risks,
+and links to feature directories. It must remain at `<project>/00-项目总览.md` and
+must not contain a feature-local implementation narrative.
 
 Project and feature IDs must comply with [path-policy.md](path-policy.md). Before writing, candidates must comply with [redaction-policy.md](redaction-policy.md); a secret scan failure is a blocked write, not a warning.

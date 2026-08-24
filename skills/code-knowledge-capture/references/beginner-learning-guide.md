@@ -20,8 +20,8 @@ Teach in this order unless the evidence clearly calls for another sequence:
 6. **Why this design** — compare the chosen approach with the most relevant
    alternative, including the cost accepted.
 7. **Verification and debugging** — distinguish static inspection, tests,
-   builds, and actual runtime evidence; show what to observe when behavior is
-   wrong.
+   builds, and actual runtime evidence; keep only the evidence needed to bound
+   the knowledge claim and show what to observe when behavior is wrong.
 8. **Retrieval practice** — finish with explain-back questions and one or more
    safe exercises tied to the actual code.
 
@@ -97,8 +97,9 @@ Self-checks should test understanding, not trivia. Include:
 
 - 3–5 explain-back questions whose answers are present in the notes;
 - 1–3 small exercises such as tracing a different input, predicting an error
-  result, locating a symbol, adding a focused test, or changing a safe local
-  constant;
+  result, locating a symbol, or changing a safe local constant. Adding a focused
+  test is optional and appropriate only when the test itself teaches the input
+  contract or boundary;
 - expected observations or answer points;
 - safety or environment constraints and a reset method when needed.
 
@@ -117,4 +118,6 @@ Avoid:
 - claiming a cause only because a test passed;
 - exercises without expected observations;
 - presenting plans or inferred architecture as implemented fact;
-- overwhelming the reader with every file, option, or edge case at once.
+- overwhelming the reader with every file, option, or edge case at once;
+- turning the feature note into a test report by pasting commands, logs, build
+  output, or a complete verification matrix without a learning purpose.

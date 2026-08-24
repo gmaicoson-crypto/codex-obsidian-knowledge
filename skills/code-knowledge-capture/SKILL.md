@@ -7,13 +7,58 @@ metadata:
 
 # Code Knowledge Capture
 
-Turn a completed or discussed coding task into durable, source-linked learning material in Obsidian. The primary reader is a beginning programmer who uses Codex to build software and wants to understand the resulting code instead of merely storing a change log. The notes must help that reader answer: what is this, why is it needed, how does it work, where is it implemented, how was it verified, and how can I recognize or reuse the idea later?
+Turn a completed or discussed coding task into durable, source-linked learning material in Obsidian. The primary reader is a beginning programmer who uses Codex to build software and wants to understand the resulting code instead of merely storing a change log. The notes must help that reader answer: what is this, why is it needed, how does it work, where is it implemented, what evidence supports it, and how can I recognize or reuse the idea later?
+
+Feature notes are knowledge documents, not development diaries or test reports. Collect
+the evidence needed to make a trustworthy capture, but put only knowledge-bearing
+content in the main feature notes: mental models, mechanisms, decisions, boundaries,
+terms, debugging insight, and reusable lessons. Tests, builds, commands, logs, and
+process history are supporting evidence; keep them concise, attach them to the claim
+they support, and place detailed provenance in `99-相关对话与文件.md` only when it is
+needed for review.
 
 This skill is project-agnostic: infer the project and feature from the current repository and conversation, and never hard-code a project name or local vault path.
 
 Before choosing note paths, look for the integration settings file `.codex-obsidian-knowledge.json` at the Vault root through the connected Obsidian MCP. If it exists, use its `noteRoot` value as a relative path prefix. If it is absent or empty, use the Vault root. Never treat an absolute path or a `..` segment as a valid note root.
 
 Read [path-policy.md](references/path-policy.md) and [redaction-policy.md](references/redaction-policy.md) before drafting targets or content. Project IDs, feature IDs, note paths, and sensitive-content handling must follow those references.
+
+## Project baseline and feature scope
+
+The project notes are the mainline knowledge layer. They are always direct children
+of the project directory:
+
+```text
+<project>/
+├── 00-项目总览.md
+├── 01-架构与术语.md
+└── features/<feature>/...
+```
+
+Derive the project identity and boundary from the repository root, project
+manifests, workspace structure, and other project-wide evidence. Never derive the
+project ID, project scope, or project-note content from the user's current feature
+question alone. The feature ID identifies only the requested learning branch.
+
+Before drafting a feature capture, perform a project-baseline pass:
+
+1. identify the repository/project boundary and inspect the project-wide entry
+   points, manifests, major components, configuration, tests, and existing project
+   notes as evidence;
+2. build or refresh a project evidence map for purpose, system boundary,
+   architecture, shared terms, main flow, invariants, risks, and coverage gaps;
+3. draft project-note changes separately from the feature delta; project notes may
+   receive only stable, project-wide conclusions and the feature index/link;
+4. draft the feature notes from the feature evidence plus the project baseline,
+   without copying feature-specific implementation detail into the project layer.
+
+If the project notes do not exist or their baseline is too weak to explain the
+feature's place in the system, use an `architecture-only` baseline pass or show the
+baseline and feature sections separately in the same preview. For an explicit
+`update-only` request, do not create the missing baseline; stop at the required
+missing-target preview. Do not silently treat the current feature branch as the
+project architecture. In a monorepo, establish the workspace/service boundary
+explicitly before writing either layer.
 
 Use `expanded` capture by default. If the user requests `compact`,
 `architecture-only`, or `update-only`, or if you recommend compact capture for
@@ -43,7 +88,7 @@ Default scope is the current conversation and current project. If the project or
 The workflow is review-first:
 
 1. Collect evidence and draft a preview without modifying files.
-2. Show the project, feature, status, capture mode, target paths, identity fields, facts, uncertainties, omissions, and proposed updates.
+2. Show the project identity and boundary, the project-mainline scope, the feature scope, status, capture mode, target paths, identity fields, facts, uncertainties, omissions, and proposed updates.
 3. Write only after the user says “确认写入” or gives an equivalent explicit approval.
 4. If the user requests a change, regenerate the preview; do not silently write.
 
@@ -57,6 +102,25 @@ Before the preview, use read-only inspection where available:
 - Repository root, project identity, and relevant changed files.
 - `git diff`, test commands and results, build reports, artifacts, and deployment evidence.
 - Existing project/feature notes in Obsidian for merge and duplicate detection.
+
+Evidence collection and note presentation are different steps. Classify collected
+material into three layers before drafting:
+
+1. **Knowledge body** — the explanation a reader needs to understand, debug, or
+   reuse the mechanism.
+2. **Minimal verification** — the smallest claim-level evidence and explicit
+   boundary needed to avoid overstating the result.
+3. **Provenance** — commands, reports, raw logs, full file lists, and source links
+   kept only for traceability; do not copy them into the learning narrative.
+
+Do not promote a test, build, deployment, or process detail into the knowledge body
+unless it explains an input contract, a state transition, a failure boundary, a
+design decision, or another reusable idea.
+
+Keep project evidence and feature evidence separate. A project-level conclusion
+must be supported by project-wide evidence or explicitly marked as partial,
+inferred, or unverified. Feature evidence can explain one branch in depth, but it
+cannot by itself define the whole project's architecture, vocabulary, or status.
 
 Do not modify source code, run destructive commands, or expose secrets during capture. Treat a design or plan as design; treat code as implemented only when a file change is evidenced. Use `verified` only when the evidence covers the claimed runtime or user scenario; passing tests or a build without that scenario remains `implemented` with an explicit verification boundary, as defined in [review-policy.md](references/review-policy.md).
 
@@ -115,8 +179,8 @@ Before drafting, build an evidence map with these buckets:
 | Behavior | What happened before, what happens now, and what invariant must hold? |
 | Structure | Which entry point, call chain, data flow, state transition, and boundary explain it? |
 | Decisions | Which alternatives were considered, and what trade-off selected the approach? |
-| Implementation | Which files, symbols, configuration keys, and tests prove the change? |
-| Verification | Which checks passed, what scenario was exercised, and what remains unverified? |
+| Implementation | Which production files, symbols, and configuration keys explain the behavior? Include a test only when it teaches a contract or boundary. |
+| Verification | What minimal evidence supports the knowledge claim, what does it not prove, and what remains unverified? |
 | Reuse | What rule, failure mode, debugging method, or anti-pattern transfers elsewhere? |
 | Follow-up | What should happen next, with priority, acceptance criteria, and dependencies? |
 
@@ -146,11 +210,33 @@ core question to its mechanism, source evidence, counterfactual or failure
 path, evidence boundary, and reuse condition. Mark missing evidence instead of
 filling it with generic explanation.
 
+### Knowledge-first content filter
+
+For every candidate paragraph, table row, code excerpt, or source item, ask:
+
+- Does it help the reader explain a mechanism, make a design judgment, diagnose a
+  symptom, understand a boundary, or transfer a lesson?
+- If it is verification evidence, what single claim does it support and what can it
+  not prove?
+- If it is only a command, raw output, build detail, deployment step, file inventory,
+  or process narration, can it be omitted or reduced to one provenance link?
+
+Keep knowledge-bearing material in the feature notes. Compress unrelated engineering
+detail to a short verification-boundary statement or omit it. Do not create a full
+test matrix merely because test results are available.
+
 ## Concrete code examples are required
 
 For implemented code, knowledge capture must include concrete source examples instead of only prose:
 
-- Include 1–3 short, representative snippets for the entry point, core logic, or validation/test path.
+- Include 1–3 short, representative snippets for the entry point, core logic, state
+  change, boundary, or decision that explains the feature.
+- Production code is the default evidence. Include a test snippet only when it makes
+  an input contract, failure path, regression boundary, or reusable testing idea
+  easier to understand; label it as supporting evidence rather than the feature's
+  main implementation.
+- Do not use test code, build scripts, CI configuration, raw logs, or deployment
+  files as default examples when they do not teach the mechanism.
 - Each snippet must identify the file path, symbol or line location, programming language, and why the code matters to the observed behavior.
 - Quote the actual source with a fenced code block; do not silently replace source with pseudocode. Use `...` only to omit irrelevant surrounding lines.
 - Prefer a before/after comparison when the behavior changed, and distinguish production code from test code.
@@ -159,9 +245,10 @@ For implemented code, knowledge capture must include concrete source examples in
 The preview for an implemented feature must show at least one code example or the explicit no-example explanation before any note is written.
 
 For an expanded implementation note, prefer 1–3 snippets that cover different
-roles: entry point, core transformation or state change, and validation/test.
-Do not repeat the same snippet in every note; link back to the implementation
-note when the source is unchanged. If a snippet cannot be safely quoted, record
+knowledge roles: entry point, core transformation or state change, and a relevant
+boundary or decision. A validation/test snippet is optional and belongs only when it
+adds learning value. Do not repeat the same snippet in every note; link back to the
+implementation note when the source is unchanged. If a snippet cannot be safely quoted, record
 the file and symbol plus `无可引用代码实例`, explain the evidence boundary, and
 keep secrets redacted.
 
@@ -186,8 +273,8 @@ The canonical expanded layout, relative to the configured note root, is:
 
 For example, when `noteRoot` is `Codex知识库`, the project overview is written to `Codex知识库/<project>/00-项目总览.md` relative to the Vault.
 
-Create a feature directory for a new feature only when the selected capture mode includes feature notes. For an existing feature, preview a patch to the affected notes rather than replacing the whole directory. `update-only` must stop at preview when the target does not exist. Keep implementation details, evidence, reusable knowledge, and future work separate. Update the project overview only with stable conclusions and confirmed status.
+Create a feature directory for a new feature only when the selected capture mode includes feature notes. For an existing feature, preview a patch to the affected notes rather than replacing the whole directory. `update-only` must stop at preview when the target does not exist. Keep implementation details, evidence, reusable knowledge, and future work separate. Update the project overview only with stable, project-wide conclusions and confirmed status. A feature capture may update the project feature index, link, or a clearly evidenced architecture delta, but must not replace the project baseline with a feature-local summary. The preview must show project-note updates and feature-note updates as separate scopes and target paths.
 
-Use safe slug IDs for `<project>` and `<feature>` and retain display names in frontmatter/headings. Validate every generated path segment immediately before the MCP operation; do not let Markdown, wikilinks, or user text introduce extra path components.
+Use safe slug IDs for `<project>` and `<feature>` and retain display names in frontmatter/headings. Validate every generated path segment immediately before the MCP operation; do not let Markdown, wikilinks, or user text introduce extra path components. Enforce that `00-项目总览.md` and `01-架构与术语.md` are direct children of `<project>` and that all feature notes are below `features/<feature>/`; a feature name or question must never become the parent of a project note.
 
 After writing, read back the changed notes or use the MCP response to verify paths and report exactly what changed.

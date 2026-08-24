@@ -7,6 +7,13 @@
   transfer conditions, and a preview depth audit. Strengthened schemas,
   templates, documentation, and behavior checks so summaries cannot pass by
   merely listing terms, files, or conclusions.
+- Refined feature captures as knowledge-first learning notes: production
+  mechanisms, decisions, boundaries, terms, debugging insight, and reusable
+  lessons remain in the narrative, while tests, builds, commands, logs, and
+  process details are reduced to claim-level evidence or source references.
+- Enforced a project-baseline pass and fixed mainline scope rules so project
+  overview and architecture notes remain at the project root and are not
+  generated from a single feature branch.
 
 ## 0.3.0 - 2026-08-23
 

@@ -80,5 +80,35 @@
       "depth_required": true,
       "duplicate_action": "create"
     }
+  },
+  {
+    "id": "feature-capture-knowledge-first",
+    "request": "Capture this feature as an expanded learning note. Keep the feature branch focused on the mental model, mechanism, design decision, boundary, reusable lesson, and debugging insight. Minimize test, build, command, log, and unrelated engineering details; retain only the evidence needed to state what is and is not verified. Preview only.",
+    "context": "The repository contains production changes, passing automated checks, and build logs, but the tests and process records do not add learning value beyond a small boundary statement.",
+    "expected": {
+      "should_capture": true,
+      "status": "implemented",
+      "capture_mode": "expanded",
+      "write_allowed": false,
+      "depth_required": true,
+      "knowledge_first": true,
+      "verification_detail": "minimal",
+      "raw_test_content": "omit-or-reference"
+    }
+  },
+  {
+    "id": "project-baseline-precedes-feature",
+    "request": "Capture the current feature as learning notes. First understand the whole repository and establish the project overview and architecture/terms at the project root. Then put the current question's mechanism and reusable knowledge under its feature branch. Preview the project and feature changes separately; do not let the feature branch define the whole project.",
+    "context": "The repository has several components, the project-level notes are missing, and the user's question concerns only one component. The capture must establish a project baseline before drafting the feature notes.",
+    "expected": {
+      "should_capture": true,
+      "status": "implemented",
+      "capture_mode": "expanded",
+      "write_allowed": false,
+      "depth_required": true,
+      "project_baseline_required": true,
+      "project_scope": "mainline",
+      "feature_scope": "branch"
+    }
   }
 ]

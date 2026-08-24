@@ -63,10 +63,12 @@ $projectOverview = Get-Content -LiteralPath (Join-Path $repoRoot 'templates\proj
 Assert-True ($projectOverview -match 'type:\s*code-project-overview' -and $projectOverview -match 'review:\s*pending') 'project-overview.md is missing project frontmatter.'
 Assert-True ($projectOverview -match 'audience:\s*beginner-programmer' -and $projectOverview -match '如何运行、观察和调试' -and $projectOverview -match '功能学习路线') 'project-overview.md is missing beginner onboarding sections.'
 Assert-True ($projectOverview -match 'schema_version:\s*2' -and $projectOverview -match 'note_kind:\s*project-overview') 'project-overview.md is missing schema version 2 metadata.'
+Assert-True ($projectOverview -match '项目主线' -and $projectOverview -match 'features/<feature>') 'project-overview.md must declare the project-mainline scope.'
 $architectureTemplate = Get-Content -LiteralPath (Join-Path $repoRoot 'templates\architecture-and-terms.md') -Raw -Encoding UTF8
 Assert-True ($architectureTemplate -match 'type:\s*code-project-architecture') 'architecture-and-terms.md is missing project architecture frontmatter.'
 Assert-True ($architectureTemplate -match 'schema_version:\s*2' -and $architectureTemplate -match 'note_kind:\s*project-architecture') 'architecture-and-terms.md is missing schema version 2 metadata.'
 Assert-True ($architectureTemplate -match 'audience:\s*beginner-programmer' -and $architectureTemplate -match '第一层：系统边界' -and $architectureTemplate -match '第二层：组件地图' -and $architectureTemplate -match '第三层：主流程' -and $architectureTemplate -match '关键术语表') 'architecture-and-terms.md is missing the beginner architecture layers or glossary.'
+Assert-True ($architectureTemplate -match '项目主线架构基线' -and $architectureTemplate -match '项目范围内的证据') 'architecture-and-terms.md must declare project-wide evidence scope.'
 $featureOverview = Get-Content -LiteralPath (Join-Path $repoRoot 'templates\feature-overview.md') -Raw -Encoding UTF8
 $implementationDetails = Get-Content -LiteralPath (Join-Path $repoRoot 'templates\implementation-details.md') -Raw -Encoding UTF8
 $implementationEffect = Get-Content -LiteralPath (Join-Path $repoRoot 'templates\implementation-effect.md') -Raw -Encoding UTF8
@@ -79,10 +81,13 @@ Assert-True ($implementationDetails -match '端到端代码导读' -and $impleme
 Assert-True ($implementationDetails -match '机制拆解' -and $implementationDetails -match '反事实、边界与失败路径' -and $implementationDetails -match '反事实/边界') 'implementation-details.md is missing mechanism and counterfactual analysis.'
 Assert-True ($implementationEffect -match '不同证据能证明什么' -and $implementationEffect -match '已知验证边界' -and $implementationEffect -match '回归、性能与运行影响') 'implementation-effect.md is missing evidence teaching or verification boundaries.'
 Assert-True ($implementationEffect -match '证据如何支持结论' -and $implementationEffect -match '关键假设与反例') 'implementation-effect.md is missing claim-to-evidence or counterexample analysis.'
+Assert-True ($implementationDetails -match '测试代码不是必选项' -and $implementationDetails -match '知识角色') 'implementation-details.md must keep test code optional and knowledge-focused.'
+Assert-True ($implementationEffect -match '不是测试报告' -and $implementationEffect -notmatch '## 验证矩阵') 'implementation-effect.md must be a concise evidence boundary, not a test matrix.'
 Assert-True ($knowledgeApplication -match '本功能关键术语' -and $knowledgeApplication -match '用自己的话检验理解' -and $knowledgeApplication -match '动手练习' -and $knowledgeApplication -match '预期观察/答案') 'knowledge-application.md is missing vocabulary, self-checks, or exercises.'
 Assert-True ($knowledgeApplication -match '机制推导' -and $knowledgeApplication -match '反例或失败信号' -and $knowledgeApplication -match '深度探究复盘') 'knowledge-application.md is missing reusable mechanism and boundary analysis.'
 Assert-True ($iterationRoadmap -match '为什么现在做' -and $iterationRoadmap -match '验收标准') 'iteration-roadmap.md is missing prioritization fields.'
 Assert-True ($sourceIndex -match '证据台账' -and $sourceIndex -match '它不能证明什么') 'source-index.md is missing evidence boundaries.'
+Assert-True ($sourceIndex -match '验证来源（仅做引用）' -and $sourceIndex -match '不要粘贴原始日志') 'source-index.md must keep verification provenance compact.'
 
 $learningGuidePath = Join-Path $repoRoot 'skills\code-knowledge-capture\references\beginner-learning-guide.md'
 $captureModesPath = Join-Path $repoRoot 'skills\code-knowledge-capture\references\capture-modes.md'
@@ -91,6 +96,7 @@ Assert-True (Test-Path -LiteralPath $learningGuidePath -PathType Leaf) 'The begi
 Assert-True (Test-Path -LiteralPath $captureModesPath -PathType Leaf) 'The capture modes reference is missing.'
 Assert-True (Test-Path -LiteralPath $deepExplorationPath -PathType Leaf) 'The deep exploration guide is missing.'
 $skillContent = Get-Content -LiteralPath (Join-Path $repoRoot 'skills\code-knowledge-capture\SKILL.md') -Raw -Encoding UTF8
+$pathPolicy = Get-Content -LiteralPath (Join-Path $repoRoot 'skills\code-knowledge-capture\references\path-policy.md') -Raw -Encoding UTF8
 $learningGuide = Get-Content -LiteralPath $learningGuidePath -Raw -Encoding UTF8
 $deepExplorationGuide = Get-Content -LiteralPath $deepExplorationPath -Raw -Encoding UTF8
 $skillUiMetadata = Get-Content -LiteralPath (Join-Path $repoRoot 'skills\code-knowledge-capture\agents\openai.yaml') -Raw -Encoding UTF8
@@ -98,6 +104,9 @@ Assert-True ($skillContent -match 'beginner-learning-guide\.md' -and $skillConte
 Assert-True ($skillContent -match 'capture-modes\.md' -and $skillContent -match 'evidence_hash' -and $skillContent -match 'capture_id') 'SKILL.md does not route capture modes or enforce capture identity.'
 Assert-True ($learningGuide -match 'Two-layer explanations' -and $learningGuide -match 'Architecture for beginners' -and $learningGuide -match 'Self-checks and exercises') 'The beginner learning guide is missing a required teaching layer.'
 Assert-True ($skillContent -match 'deep-exploration-guide\.md' -and $skillContent -match '深度探究审计') 'SKILL.md does not enforce the deep exploration audit.'
+Assert-True ($skillContent -match 'Knowledge-first content filter' -and $skillContent -match 'Feature notes are knowledge documents') 'SKILL.md does not enforce knowledge-first feature capture.'
+Assert-True ($skillContent -match 'Project baseline and feature scope' -and $skillContent -match 'project-wide evidence' -and $skillContent -match 'direct children of `<project>`') 'SKILL.md does not enforce a project baseline and mainline scope.'
+Assert-True ($pathPolicy -match 'Knowledge hierarchy invariant' -and $pathPolicy -match 'direct children of the project ID') 'path-policy.md does not enforce project-mainline hierarchy.'
 Assert-True ($deepExplorationGuide -match '六遍探究流程' -and $deepExplorationGuide -match '反事实' -and $deepExplorationGuide -match '证据不足') 'The deep exploration guide is missing mechanism, counterfactual, or evidence-gap guidance.'
 Assert-True ($skillUiMetadata -match 'short_description:\s*"[^"]*beginner-friendly[^"]*"') 'agents/openai.yaml does not describe the beginner-friendly learning workflow.'
 Assert-True ($skillUiMetadata -match 'default_prompt:\s*"Use \$code-knowledge-capture\b') 'agents/openai.yaml default_prompt must explicitly invoke $code-knowledge-capture.'

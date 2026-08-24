@@ -18,3 +18,20 @@ Use the stable project ID, feature ID, source thread ID, and a SHA-256 hash of n
 ## Validation boundary
 
 Validate the complete target path immediately before an MCP write. If any segment fails validation, stop before creating a directory or note and show the rejected segment to the user.
+
+## Knowledge hierarchy invariant
+
+The project and feature scopes have fixed parent relationships:
+
+```text
+<project>/00-项目总览.md
+<project>/01-架构与术语.md
+<project>/features/<feature>/...
+```
+
+Project notes must be direct children of the project ID. A feature ID, user
+question, conversation slug, or changed-file path must never be used as their
+parent directory. Validate project-note and feature-note targets separately in the
+preview and immediately before the MCP operation. Path correctness alone is not
+enough: project-note content must also come from project-wide evidence rather than
+the current feature branch.

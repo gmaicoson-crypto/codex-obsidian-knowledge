@@ -28,7 +28,9 @@ $requiredIds = @(
     'sensitive-evidence-is-redacted',
     'update-only-missing-target-blocks',
     'duplicate-evidence-is-noop',
-    'expanded-depth-audit'
+    'expanded-depth-audit',
+    'feature-capture-knowledge-first',
+    'project-baseline-precedes-feature'
 )
 foreach ($id in $requiredIds) { if (-not $ids.ContainsKey($id)) { throw "Missing required behavior case: $id" } }
 $implementedCase = $cases | Where-Object { $_.id -eq 'implemented-expanded-preview' } | Select-Object -First 1
@@ -38,6 +40,14 @@ if ([string]$implementedCase.expected.status -ne 'implemented') {
 $depthCase = $cases | Where-Object { $_.id -eq 'expanded-depth-audit' } | Select-Object -First 1
 if (-not [bool]$depthCase.expected.depth_required) {
     throw 'Expanded depth audit case must require deep exploration.'
+}
+$knowledgeCase = $cases | Where-Object { $_.id -eq 'feature-capture-knowledge-first' } | Select-Object -First 1
+if (-not [bool]$knowledgeCase.expected.knowledge_first -or [string]$knowledgeCase.expected.verification_detail -ne 'minimal' -or [string]$knowledgeCase.expected.raw_test_content -ne 'omit-or-reference') {
+    throw 'Knowledge-first feature capture case must require minimal, non-reporting verification content.'
+}
+$baselineCase = $cases | Where-Object { $_.id -eq 'project-baseline-precedes-feature' } | Select-Object -First 1
+if (-not [bool]$baselineCase.expected.project_baseline_required -or [string]$baselineCase.expected.project_scope -ne 'mainline' -or [string]$baselineCase.expected.feature_scope -ne 'branch') {
+    throw 'Project baseline case must require separate mainline and feature scopes.'
 }
 if ($schema.type -ne 'object' -or [bool]$schema.additionalProperties) { throw 'Skill eval output schema must be a closed object.' }
 Write-Output 'Skill behavior case validation passed.'
